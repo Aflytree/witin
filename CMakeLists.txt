@@ -29,7 +29,7 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 #并将名称保存到DIR_SRCS变量中
 aux_source_directory(. DIR_SRCS)
 #为源文件的编译添加选项
-#ADD_DEFINITIONS(-g -W -Wall -o2))
+#ADD_DEFINITIONS(-g -W -Wall -o2 )
 link_directories(./lib)
 message(STATUS "add exectable")
 
@@ -56,4 +56,4 @@ target_link_libraries(witin_excu)
 add_library(witin SHARED ${SOURCES})
 SET_TARGET_PROPERTIES(witin PROPERTIES VERSION 1.0 SOVERSION 1)
 
-add_subdirectory(tests)
+#add_subdirectory(tests)

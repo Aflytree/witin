@@ -10,7 +10,9 @@
 #ifndef _TENSOR_H
 #define _TENSOR_H
 
+
 #include <vector>
+#include <witin/global.h>
 using namespace std;
 
 namespace witin{
@@ -26,26 +28,30 @@ class operation{
 };
 
 
-// template <typename T>
+//template <typename T>
 class Tensor{
-    //inline const TensorNode* operator ->();
-    // typedef T T_
-    Tensor(void*ptr);
-    inline bool operator ==(const Tensor & other) const;
-    inline bool operator !=(const Tensor & other) const;
-    inline size_t ndim() const;
-    inline void setShape(std::vector<int> s);
-    inline std::vector<int> getShape() const;
-    inline void *getData() const;
-    /*bytes*/
-    inline void size() const;
-
-    public:
+    // const TensorNode* operator ->();
+    //typedef T T_
+    public: 
+		Tensor();
+		bool operator ==(const Tensor & other) const;
+    	bool operator !=(const Tensor & other) const;
+    	size_t ndim() const;
+    	void setShape(std::vector<int> s);
+    	std::vector<int> getShape() const;
+		void print() const;
+    	void *getData() const;
+    	int getSize() const;
+    	int setData(void * data_in);
+		string getDataType(){
+		
+		};
         operation* op;
 
     private:
         std::vector<int> shape;
-        void* data;
+        void* __data;
+		//T type;
 };
 }// namespace tensor
 }// namespace witin

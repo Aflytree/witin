@@ -32,25 +32,25 @@ namespace graph {
     // }
 
     template <typename NodeDataType, typename EdgeDataType>
-    void afly_graph<NodeDataType, EdgeDataType>::in_degree(NodeDataType node){
+    void witin_graph<NodeDataType, EdgeDataType>::in_degree(NodeDataType node){
     };
 
     template <typename NodeDataType, typename EdgeDataType>
-    void afly_graph<NodeDataType, EdgeDataType>::out_degree(NodeDataType node){
+    void witin_graph<NodeDataType, EdgeDataType>::out_degree(NodeDataType node){
     };
 
     template <typename NodeDataType, typename EdgeDataType>
-    std::vector<NodeDataType> afly_graph<NodeDataType, EdgeDataType>::inNodes(){
+    std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::inNodes(){
     };
 
     template <typename NodeDataType, typename EdgeDataType>
-    std::vector<NodeDataType> afly_graph<NodeDataType, EdgeDataType>::outNodes(){
+    std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::outNodes(){
     };
 
     
     
     //template <typename NodeDataType, typename EdgeDataType>
-    //std::vector<NodeDataType> afly_graph<NodeDataType, EdgeDataType>::getAllNodes(){
+    //std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::getAllNodes(){
     //    DLOG(INFO)<<"get all nodes:";
     //    std::vector<NodeDataType> v;
     //    auto vertexprop = get(boost::vertex_name, inter_graph);
@@ -65,7 +65,7 @@ namespace graph {
     //};
 
     //template <typename NodeDataType, typename EdgeDataType>
-    //void afly_graph<NodeDataType, EdgeDataType>::printAllNodes(){
+    //void witin_graph<NodeDataType, EdgeDataType>::printAllNodes(){
     //    DLOG(INFO)<<"print all nodes:";
     //    vertex_range_t vrange = vertices(inter_graph);
     //    auto vertexprop = get(boost::vertex_name, inter_graph);
@@ -78,7 +78,7 @@ namespace graph {
     //};
 
     //template <typename NodeDataType, typename EdgeDataType>
-    //void afly_graph<NodeDataType, EdgeDataType>::printAllEdges(){
+    //void witin_graph<NodeDataType, EdgeDataType>::printAllEdges(){
     //    DLOG(INFO)<<"print all edges:";
     //    edge_range_t erange = edges(inter_graph);
     //    if(erange.first == erange.second){

@@ -37,9 +37,11 @@ struct EdgeProperty{
 typedef std::shared_ptr<witin::node::OpNode> baseOpNodePtr;
 
 template < typename NodeDataType, typename EdgeDataType>
-class afly_graph{
+class witin_graph
+{
 
-    typedef struct edge_t{
+    typedef struct edge_t
+	{
         edge_t(NodeDataType src = nullptr,
                NodeDataType dst = nullptr) :
                srcNode(src), dstNode(dst)
@@ -80,9 +82,9 @@ class afly_graph{
 
     public:
       /* default constructors etc. */
-        afly_graph(){}
+        witin_graph(){}
         /*deconstructors*/
-        virtual ~afly_graph(){}
+        virtual ~witin_graph(){}
 
         /* structure modification methods */
         void Clear(){
@@ -90,7 +92,8 @@ class afly_graph{
         }
 
         //不可用inline函数
-        Vertex addNode(const NodeDataType& node){
+        Vertex addNode(const NodeDataType& node)
+		{
             auto r = local_map_.find(node);
             if(r != local_map_.end()){
                 LOG(FATAL) << "node is already added!";
@@ -101,7 +104,8 @@ class afly_graph{
         }
 
         void addEdge(NodeDataType node1, NodeDataType node2,
-                                    EdgeDataType edge){
+                                    EdgeDataType edge)
+		{
             auto r1 = local_map_.find(node1);
             auto r2 = local_map_.find(node2);
             if(r1 == local_map_.end() && r2 == local_map_.end()){
@@ -116,7 +120,7 @@ class afly_graph{
         std::vector<NodeDataType> inNodes();
         std::vector<NodeDataType> outNodes();
         //void printAllNodes();
-        //void afly_graph<NodeDataType, EdgeDataType>::printAllNodes(){
+        //void witin_graph<NodeDataType, EdgeDataType>::printAllNodes(){
         void printAllNodes()
         {
             DLOG(INFO)<<"print all nodes:";
@@ -160,13 +164,12 @@ class afly_graph{
                 // baseOpNodePtr vprop = vertexprop(*itr);
                 cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
                     t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
-
-
             }
         };
 
         //std::string print(){
-        void print(){
+        void print()
+		{
             printAllNodes();
             printAllEdges();
         }
@@ -189,13 +192,14 @@ class afly_graph{
         //整个图的inputNodes
         vector<NodeDataType>  getInputNodes();
         //整个图的outputNodes
-        vector<NodeDataType>  getOutputNodes(){
+        vector<NodeDataType>  getOutputNodes()
+		{
             //vector<NodeDataType> DFSNodes = DFS();
             //outdegree为0
         }
 
-
-        int32_t writeToPDF(char const *filename){
+        int32_t writeToPDF(char const *filename)
+		{
         }
 
     private:
@@ -205,7 +209,7 @@ class afly_graph{
         //std::vector<>
 };
 
-typedef witin::graph::afly_graph<baseOpNodePtr, EdgeProperty> WitinGraphType;
+typedef witin::graph::witin_graph<baseOpNodePtr, EdgeProperty> WitinGraphType;
 
 }// namespace graph
 }// namespace witin

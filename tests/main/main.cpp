@@ -15,11 +15,14 @@
 #include <witin/node/node.h>
 #include <witin/graph/graph.h>
 #include <witin/op/math.h>
+#include <witin/session/session.h>
 
 using namespace std;
 using namespace witin::node;
 using namespace witin::graph;
 using namespace witin::math;
+using namespace witin::session;
+using namespace witin::tensor;
 
 typedef witin::node::OpNode base1OpNode;
 
@@ -34,7 +37,7 @@ int main(int argc, char *argv[])
           << BOOST_VERSION % 100
           << std::endl;
     auto absNode1 = std::make_shared<AbsNode>(1,"abs");
-
+	
     std::shared_ptr <base1OpNode> absNode =
                         std::make_shared<AbsNode>(1,"abs");
     std::shared_ptr <base1OpNode> logNode =
@@ -56,7 +59,40 @@ int main(int argc, char *argv[])
     // graph.printAllNodes();
     graph.printAllEdges();
     graph.print();
-    // auto s = graph.getAllNodes();
+	
+	vector<int> shape(3);
+	char * data;
+	
+	int i = 0;
+	int size = 1;
+	for(auto sh : shape){
+		i++;
+		size *= i;
+		shape.push_back(i);
+	}
+	char aa[size];
+	for(int j = 0;j < size; j++){
+		aa[j] = j;
+	}
+
+	data = (char*)malloc(size);
+	memcpy(data, aa, size * sizeof(char));
+    //Tensor
+	Tensor tensor;
+	tensor.setShape(shape);
+	tensor.setData((void*)data);
+	std::vector<Tensor> input_tensors;
+	input_tensors.push_back(tensor);
+
+	//Session
+	Session ss;
+	ss.build(graph);
+	ss.run(graph, input_tensors);
+
+	//free data;
+
+
+	// auto s = graph.getAllNodes();
     // DLOG(INFO) <<" nodes size: "<<s.size();
 
     // graph->AddVertex(logNode);

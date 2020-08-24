@@ -7,38 +7,76 @@
  * @FilePath: /tvm/home/afly/work/witin/src/tensor.cpp
  */
 #include <witin/tensor/tensor.h>
+#include <witin/global.h>
 
 namespace witin{
 namespace tensor{
 
-    Tensor::Tensor(void* ptr){
-
-
+    //Tensor::Tensor(void* ptr){
+    Tensor::Tensor(){
     }
-    inline bool Tensor::operator ==(const Tensor & other) const {
-
-    }
-
-    inline bool Tensor::operator !=(const Tensor & other) const {
-
-    }
-    inline size_t Tensor::ndim() const{
-
-    }
-    inline void Tensor::setShape(std::vector<int> s) {
-
-    }
-    inline std::vector<int> Tensor::getShape() const {
-
+    
+	bool Tensor::operator ==(const Tensor & other) const {
+		 //shape == and data ==
     }
 
-    inline void* Tensor::getData() const {
-
+    bool Tensor::operator !=(const Tensor & other) const {
+		//shape != or data !=
     }
-    inline void Tensor::size() const {
-
+    
+	size_t Tensor::ndim() const{
+		return shape.size();
+    }
+    
+	void Tensor::setShape(std::vector<int> s) {
+		//shape = s;
+		for(auto kv : s){
+			shape.push_back(kv);
+		}
+    }
+    
+	std::vector<int> Tensor::getShape() const {
+		return shape;
+    }
+	
+	int Tensor::setData(void * data_in) {
+		int size = 1;
+		for(auto sp : shape){
+			size *= sp;
+		}
+		__data = (char*)malloc(size);
+		memcpy(__data, data_in, size);
+	}
+	
+    void* Tensor::getData() const {
+	}
+    
+	int Tensor::getSize() const {
+		int size = 1;
+		for(auto sp : shape){
+			size *= sp;
+		}
+		return size;
     }
 
+	void Tensor::print() const
+	{
+		std::vector<int> vt = shape;
+		cout<<"Tensor shape is:"<<endl;
+		for(auto sp : getShape()){
+			cout<<sp<<" ";
+		}
+		cout<<endl;
+		
+		cout<<"Data is:"<<endl;
+		int size = getSize();
+		for(int i = 0;i < size; i++){
+			cout<<(int)((char*)__data)[i]<<" ";
+			if(i % 10 == 0 && i != 0)
+				cout<<endl;
+		}
+		cout<<endl;
+	}
 
 
 }// namespace tensor
