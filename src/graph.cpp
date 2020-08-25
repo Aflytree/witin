@@ -31,21 +31,21 @@ namespace graph {
     //     add_edge(r1->second, r2->second, edge, inter_graph);
     // }
 
-    template <typename NodeDataType, typename EdgeDataType>
-    void witin_graph<NodeDataType, EdgeDataType>::in_degree(NodeDataType node){
-    };
+    //template <typename NodeDataType, typename EdgeDataType>
+    //int witin_graph<NodeDataType, EdgeDataType>::in_degree(NodeDataType node){
+    //};
 
-    template <typename NodeDataType, typename EdgeDataType>
-    void witin_graph<NodeDataType, EdgeDataType>::out_degree(NodeDataType node){
-    };
+    //template <typename NodeDataType, typename EdgeDataType>
+    //int witin_graph<NodeDataType, EdgeDataType>::out_degree(NodeDataType node){
+    //};
 
-    template <typename NodeDataType, typename EdgeDataType>
-    std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::inNodes(){
-    };
+    //template <typename NodeDataType, typename EdgeDataType>
+    //std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::inNodes(){
+    //};
 
-    template <typename NodeDataType, typename EdgeDataType>
-    std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::outNodes(){
-    };
+    //template <typename NodeDataType, typename EdgeDataType>
+    //std::vector<NodeDataType> witin_graph<NodeDataType, EdgeDataType>::outNodes(){
+    //};
 
     
     

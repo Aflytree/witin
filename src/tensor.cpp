@@ -62,6 +62,7 @@ namespace tensor{
 	void Tensor::print() const
 	{
 		std::vector<int> vt = shape;
+		cout<<"=========================="<<endl;
 		cout<<"Tensor shape is:"<<endl;
 		for(auto sp : getShape()){
 			cout<<sp<<" ";
@@ -76,6 +77,7 @@ namespace tensor{
 				cout<<endl;
 		}
 		cout<<endl;
+		cout<<"=========================="<<endl;
 	}
 
 

@@ -34,15 +34,18 @@ class Tensor{
     //typedef T T_
     public: 
 		Tensor();
+		
 		bool operator ==(const Tensor & other) const;
     	bool operator !=(const Tensor & other) const;
-    	size_t ndim() const;
+    	
+		size_t ndim() const;
     	void setShape(std::vector<int> s);
     	std::vector<int> getShape() const;
 		void print() const;
     	void *getData() const;
     	int getSize() const;
     	int setData(void * data_in);
+		
 		string getDataType(){
 		
 		};
