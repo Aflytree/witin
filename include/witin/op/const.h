@@ -1,26 +1,25 @@
 /*================================================================
-*   
-*   @file       ：pooling.h
-*   @author     ：afly
-*   @date       ：2020.08.23
-*   @description：
+*   @file       :const.h
+*   @author     :afly
+*   @date       :2020.08.25
+*   @description:
 *
 *================================================================*/
-#ifndef _POOLING_H
-#define _POOLING_H
+#ifndef _CONST_OP_H
+#define _CONST_OP_H
 
 #include <witin/node/node.h>
 #include <witin/global.h>
 
 namespace witin{
-namespace pool{
+namespace cnst{
 
 //using namespace witin::node;
 
-class poolOpNode : public OpNode{
+class constNode : public OpNode{
     public:
 		constNode(){}
-		constNode(int id = POOL_OPNODE_ID, const std::string name = "")
+        constNode(int id = CONST_NODE_ID, const std::string name = "")
         : OpNode{id, name}
         {
             this->id = id;
@@ -31,11 +30,11 @@ class poolOpNode : public OpNode{
         std::string name;
 };
 
-} //namespace pool
+} //namespace cnst
 } //namespace witin
 
-#endif //POOLING_H
 
+#endif //_CONST_OP_H
 
 
 

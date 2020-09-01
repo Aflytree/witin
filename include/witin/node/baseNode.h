@@ -4,15 +4,13 @@
  * @LastEditTime: 2020-08-23 16:39:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings EditO
- * @FilePath: /tvm/home/afly/work/witin/include/fy/node.h
+ * @FilePath: /tvm/home/afly/work/witin/include/witin/node/node.h
  */
 #pragma once
 #ifndef _BASE_OP_NODE_H
 #define _BASE_OP_NODE_H
 
 #include "../global.h"
-
-using namespace std;
 
 namespace witin{
 namespace node{

@@ -1,5 +1,4 @@
 /*================================================================
-*   Copyright (C) 2020 Lynxi Ltd. All rights reserved.
 *   
 *   @file       ：conv.h
 *   @author     ：afly

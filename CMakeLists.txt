@@ -6,7 +6,13 @@ project (witin_excu)
 
 #include_directories(/usr/include/python3.5m)
 
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/node/*.cpp"
+	"src/graph/*.cpp"
+	"src/tensor/*.cpp"
+	"src/target/*.cpp"
+	"src/session/*.cpp"
+	"src/main.cpp"
+	)
 file(GLOB DMLC_PATH "3rdparty/dmlc-core/include")
 file(GLOB DLPACK_PATH "3rdparty/dlpack/include")
 file(GLOB INCLUDE_DIR "include/")
@@ -21,6 +27,7 @@ include(cmake/modules/Findlibdb_cxx.cmake)
 #判断编译器类型,如果是gcc编译器,则在编译选项中加入c++11支持
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-std=c++11)
+	#add_compile_options(-ljsoncpp)
     message(STATUS "optional:-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 

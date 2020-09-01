@@ -4,28 +4,24 @@
 #include <witin/tensor/tensor.h>
 #include <witin/global.h>
 
-
-using namespace witin::tensor;
+//using namespace witin::base;
 using namespace witin::graph;
 
 namespace witin{
 namespace session{
-    typedef std::shared_ptr<witin::node::OpNode> baseOpNodePtr;
+    typedef std::shared_ptr<witin::base::OpNode> baseOpNodePtr;
 
 	class Session{
-	public:	
-    	Session()
-		{}
-		int32_t build(WitinGraphType &InGraph){
-		
-		}
-		
-		int32_t run(WitinGraphType &InGraph, std::vector<Tensor> inputs){
-		
-		}
-    
-	private:
-		WitinGraphType inGraph;
+		public:	
+    		Session()
+			{}
+			int32_t build(WitinGraphType &InGraph, vector<vector<int> > shape);
+			
+			int32_t run(WitinGraphType &InGraph, vector<Tensor> inputs);
+			
+
+		private:
+			WitinGraphType inGraph;
 
     };
 	

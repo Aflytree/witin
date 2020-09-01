@@ -18,13 +18,12 @@
 #include <witin/session/session.h>
 
 using namespace std;
-using namespace witin::node;
 using namespace witin::graph;
 using namespace witin::math;
 using namespace witin::session;
-using namespace witin::tensor;
+using namespace witin::base;
 
-typedef witin::node::OpNode base1OpNode;
+typedef witin::base::OpNode base1OpNode;
 
 int main(int argc, char *argv[])
 {

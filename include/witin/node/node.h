@@ -8,17 +8,37 @@
  */
 
 #pragma once
-#ifndef ___NODE_H
-#define ___NODE_H
+#ifndef _NODE_H
+#define _NODE_H
 
-#include <witin/node/baseNode.h>
 #include <witin/global.h>
-
-using namespace std;
+#include <witin/node/baseNode.h>
+#include <witin/tensor/tensor.h>
 
 namespace witin{
-namespace node{
+namespace base{
 
+class Tensor;
+using namespace witin::node;
+
+struct ir_op{
+	int op_type;
+	int op_version;
+	bool same_shape;
+	int param_size;
+};
+
+//int set_opnode_input_tensor(class OpNode op, int input_idx, Tensor tensor){
+//	//if(tensor->getConsumersNum() >= MAX_CONSUMERS_SIZE)
+//	//{
+//	//	std::cout<<"error in set opnode input tensor"<<std::endl;	
+//	//	return -1;
+//	//}
+//	
+//	op.input_tensors[input_idx] = tensor;
+//
+//
+//}
 
 class OpNode : public node{
     public:
@@ -29,12 +49,23 @@ class OpNode : public node{
             this->id = id;
             this->name = name;
         }
-        std::string getName(){
+		std::string getName(){
             return name;
         }
-    private:
+
+		//int set_input_tensors(vector<Tensor> ts){}
+		//int get_input_tensors(vector<Tensor> & ts){}
+		//int set_output_tensors(vector<Tensor> ts){}
+		//int get_output_tensors(vector<Tensor> & ts){}
+		//
+		//virtual std::vector<int> infer_shape(){};
+
+	private:
         int id;
-        std::string name;
+		std::string name;
+		//vector<witin::tensor::Tensor> input_tensors;
+		//vector<Tensor> output_tensors;
+		struct ir_op op;
 };
 
 } // namespace node

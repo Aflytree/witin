@@ -1,5 +1,4 @@
 /*================================================================
-*   Copyright (C) 2020 Lynxi Ltd. All rights reserved.
 *   
 *   @file       ：math.h
 *   @author     ：afly
@@ -11,16 +10,17 @@
 #define _MATH_OP_H
 
 #include <witin/node/node.h>
+#include <witin/global.h>
 
 namespace witin{
 namespace math{
 
-using namespace witin::node;
+//using namespace witin::node;
 
-class LogNode : public OpNode{
+class LogOpNode : public OpNode{
     public:
-        LogNode(){}
-        LogNode(int id, const std::string name = "")
+        LogOpNode(){}
+        LogOpNode(int id = LOG_OPNODE_ID, const std::string name = "")
         : OpNode{id, name}
         {
             this->id = id;
@@ -31,10 +31,10 @@ class LogNode : public OpNode{
         std::string name;
 };
 
-class AbsNode : public OpNode{
+class AbsOpNode : public OpNode{
     public:
-        AbsNode(){}
-        AbsNode(int id, const std::string name = "")
+        AbsOpNode(){}
+        AbsOpNode(int id = ABS_OPNODE_ID, const std::string name = "")
         : OpNode{id, name}
         {
             this->id = id;
@@ -45,11 +45,11 @@ class AbsNode : public OpNode{
         std::string name;
 };
 
-} //namespace node
+} //namespace math
 } //namespace witin
 
 
-#endif //MATH_H
+#endif //_MATH_OP_H
 
 
 

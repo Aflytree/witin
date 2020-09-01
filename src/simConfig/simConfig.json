@@ -1,0 +1,41 @@
+{
+	"board": "NB01P",
+    "version": "NB01P-001",
+	"date": "2020-08-26",
+	"data":"/home/wintin/wor/witin/src/simConfig/data.dat",
+	"chip":{
+		[
+		"core":{
+			"roundConfig":[
+				"round_total": 2,
+				"round":{
+					"cnt" : 0,
+					"array":{
+						"bias_addr": 10,
+						"biad_length": 10,
+						"input_addr":0,
+						"weight":0x00,
+						"weight_height": 0x0,
+						"weight_width":0x0,
+						"length":10,
+						"round_pause":0
+					}
+				},
+				"round":{
+					"cnt" : 1,
+					"array":{
+						"bias_addr": 10,
+						"biad_length": 10,
+						"input_addr":0,
+						"weight":0x00,
+						"weight_height": 0x0,
+						"weight_width":0x0,
+						"length":10,
+						"round_pause":1
+					}
+				
+				}
+			}
+		]
+	}
+}	

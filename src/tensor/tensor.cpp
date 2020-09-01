@@ -10,7 +10,7 @@
 #include <witin/global.h>
 
 namespace witin{
-namespace tensor{
+namespace base{
 
     //Tensor::Tensor(void* ptr){
     Tensor::Tensor(){
@@ -24,9 +24,9 @@ namespace tensor{
 		//shape != or data !=
     }
     
-	size_t Tensor::ndim() const{
-		return shape.size();
-    }
+	//size_t Tensor::ndim() const{
+	//	return shape.size();
+    //}
     
 	void Tensor::setShape(std::vector<int> s) {
 		//shape = s;
@@ -51,12 +51,13 @@ namespace tensor{
     void* Tensor::getData() const {
 	}
     
-	int Tensor::getSize() const {
+	int Tensor::getSize(int &s) const {
 		int size = 1;
 		for(auto sp : shape){
 			size *= sp;
 		}
-		return size;
+		s = size;
+		return 0;
     }
 
 	void Tensor::print() const
@@ -70,7 +71,8 @@ namespace tensor{
 		cout<<endl;
 		
 		cout<<"Data is:"<<endl;
-		int size = getSize();
+		int size = 0;
+		getSize(size);
 		for(int i = 0;i < size; i++){
 			cout<<(int)((char*)__data)[i]<<" ";
 			if(i % 10 == 0 && i != 0)

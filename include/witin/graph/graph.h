@@ -4,7 +4,7 @@
  * @LastEditTime: 2020-05-06 23:13:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: /tvm/home/afly/work/afly_ai/include/fy/graph.h
+ * @FilePath: /tvm/home/afly/work/afly_ai/include/witin/graph/graph.h
  */
 #pragma once
 #ifndef _GRAPH_H
@@ -13,11 +13,11 @@
 #include <boost/config.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/directed_graph.hpp>
-#include <vector>
-#include <utility>
+#include <boost/graph/topological_sort.hpp>
+
 #include <dmlc/logging.h>
 #include <witin/node/node.h>
+#include <witin/global.h>
 
 namespace boost {
 
@@ -27,14 +27,14 @@ namespace witin{
 namespace graph{
 
 using namespace boost;
-using namespace witin::node;
+using namespace witin::base;
 
 struct EdgeProperty{
     int src;
     int dst;
 };
 
-typedef std::shared_ptr<witin::node::OpNode> baseOpNodePtr;
+typedef std::shared_ptr<witin::base::OpNode> baseOpNodePtr;
 
 // enum vertex_properties_t { vertex_properties };
 // enum edge_properties_t { edge_properties };
@@ -42,7 +42,6 @@ typedef std::shared_ptr<witin::node::OpNode> baseOpNodePtr;
 template < typename NodeDataType, typename EdgeDataType>
 class witin_graph
 {
-
     typedef struct edge_t
 	{
         edge_t(NodeDataType src = nullptr,
@@ -87,17 +86,22 @@ class witin_graph
     typedef std::pair<edge_iter, edge_iter> edge_range_t;
 
     public:
-      /* default constructors etc. */
+		
+		/* default constructors etc. */
         witin_graph(){}
-        /*deconstructors*/
+        
+		/*deconstructors*/
         virtual ~witin_graph(){}
 
         /* structure modification methods */
-        void Clear(){
+        void Clear()
+		{
             inter_graph.clear();
         }
 
-        //不可用inline函数
+        /* 
+		 * add node to inter_graph and update global local_map_
+		 */
         Vertex addNode(const NodeDataType& node)
 		{
             auto r = local_map_.find(node);
@@ -108,14 +112,18 @@ class witin_graph
             local_map_[node] = v;
             return v;
         }
-
+		
+		/* 
+		 * add edge to inter_graph
+		 */
         void addEdge(NodeDataType node1, NodeDataType node2,
                                     EdgeDataType edge)
 		{
             auto r1 = local_map_.find(node1);
             auto r2 = local_map_.find(node2);
-            if(r1 == local_map_.end() && r2 == local_map_.end()){
-                LOG(FATAL) << "should add node first!";
+            if(r1 == local_map_.end() && r2 == local_map_.end())
+			{
+                LOG(FATAL) << "Should add node first!";
             }
             add_edge(r1->second, r2->second, edge, inter_graph);
 
@@ -244,8 +252,7 @@ class witin_graph
             
 			if(erange.first == erange.second)
 			{
-                DLOG(INFO)<<"None";
-				cout<<"Empty Edges In Inter_graph!"
+				cout<<"Empty Edges In Inter_graph!"<<endl;
                 return;
             }
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
@@ -256,7 +263,7 @@ class witin_graph
                 cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
                     t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
             }
-        };
+        }
 		
 		/* 
 		 *  dump total graph to console 
@@ -271,9 +278,18 @@ class witin_graph
             printAllEdges();
             cout<<"=========================="<<endl;
         }
-        //void printAllEdges();
-        //std::vector<NodeDataType> getAllNodes();
-        std::vector<EdgeDataType> getEAlledges();
+        
+		/* 
+		 *  total nodes of inter_graph 
+		 */
+		size_t getNumNodes() const{return num_vertices[inter_graph];};
+    
+		/* 
+		 *  total edges of inter_graph 
+		 */
+		size_t getNumEdges() const{return num_edges[inter_graph];}; 
+		
+		std::vector<EdgeDataType> getEAlledges();
         vector<EdgeDataType>  getInEdges(const NodeDataType& data);
 
         size_t getOutDegree(const NodeDataType& data);
@@ -281,20 +297,31 @@ class witin_graph
         size_t removeNode(const NodeDataType& data);
         int32_t removeEdge(const EdgeDataType & edge);
         int32_t removeEdge(const NodeDataType& node1,const NodeDataType& node2);
-        size_t getNumNodes() const{return num_vertices[inter_graph];};
-        size_t getNumEdges() const{return num_edges[inter_graph];};
-        //boost dfs方法遍历图
-        vector<NodeDataType> DFS();
-        vector<NodeDataType> BFS();
-
-        //整个图的inputNodes
-        vector<NodeDataType>  getInputNodes();
-        //整个图的outputNodes
-        vector<NodeDataType>  getOutputNodes()
+       
+		/* 
+		 *  graph ===> linear vector  
+		 *	
+		 */
+		vector<NodeDataType> graph_topological_sort()
 		{
-            //vector<NodeDataType> DFSNodes = DFS();
-            //outdegree为0
-        }
+			std::vector<NodeDataType> ret;
+			cout <<"dfs  visitor is begin !"<<endl;
+			deque<int> top_order;
+			topological_sort(inter_graph, front_inserter(top_order));		
+			
+            auto vertexprop = get(boost::vertex_name, inter_graph);
+			for(auto k : top_order)
+			{
+				NodeDataType node = vertexprop[k];
+				ret.push_back(node);
+			}
+			cout<<"ret.size():"<<ret.size()<<endl;	
+			return ret;
+		}
+        
+		
+		vector<NodeDataType> DFS();
+		vector<NodeDataType> BFS();
 
         int32_t writeToPDF(char const *filename)
 		{
@@ -304,7 +331,6 @@ class witin_graph
         graph_type_ inter_graph;
         /*NodeDataType << -- >> Vertex*/
         std::map<NodeDataType, Vertex> local_map_;
-        //std::vector<>
 };
 
 typedef witin::graph::witin_graph<baseOpNodePtr, EdgeProperty> WitinGraphType;
