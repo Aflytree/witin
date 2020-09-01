@@ -9,6 +9,7 @@
 #include <witin/graph/graph.h>
 #include <witin/global.h>
 #include <deque>
+#include <json/json.h>
 
 using namespace witin::graph;
 using namespace witin::session;
@@ -48,6 +49,7 @@ namespace session{
 
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
 	{
+		Json::Value root;
 		//std::cout<<"Session build "<<std::endl;
 		//auto in_nodes = InGraph.inNodes();
 		//auto out_nodes = InGraph.outNodes();

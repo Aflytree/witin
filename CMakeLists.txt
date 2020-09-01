@@ -27,10 +27,10 @@ include(cmake/modules/Findlibdb_cxx.cmake)
 #判断编译器类型,如果是gcc编译器,则在编译选项中加入c++11支持
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-std=c++11)
-	#add_compile_options(-ljsoncpp)
     message(STATUS "optional:-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
+add_compile_options(-ljsoncpp)
 #add_compile_options(-std=c++11)
 #查找当前目录下的所有源文件
 #并将名称保存到DIR_SRCS变量中
@@ -57,7 +57,7 @@ endif()
 #得出可执行文件
 add_executable(witin_excu  ${SOURCES})
 #link libray in static mode
-target_link_libraries(witin_excu)
+target_link_libraries(witin_excu jsoncpp)
 
 
 add_library(witin SHARED ${SOURCES})
