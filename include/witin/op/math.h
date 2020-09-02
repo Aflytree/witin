@@ -15,7 +15,7 @@
 namespace witin{
 namespace math{
 
-//using namespace witin::node;
+using namespace witin::base;
 
 class LogOpNode : public OpNode{
     public:

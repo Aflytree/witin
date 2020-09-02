@@ -5,10 +5,12 @@
 	> Mail: aifei.zhang@witintech.com 
 	> Created Time: Wed Aug 26 19:39:57 2020
  ************************************************************************/
-#ifndef _ACTIVE_H
-#define _ACTIVE_H
+#pragma once
+#ifndef _MEM_H
+#define _MEM_H
 
 #include <witin/global.h>
+#include <witin/tensor/tensor.h>
 
 namespace witin{
 namespace mem{
@@ -35,6 +37,26 @@ class RegFileMem;
 class BiasRegionMem;
 class CaculateArryMem; 
 class DACFifoMem;
+
+struct mem_record{
+	//class Tensor * tensor;
+	int used;
+	int start;
+	int len;
+};
+
+struct bias_mem_record{
+	struct mem_record;
+};
+struct array_mem_record{
+	struct mem_record;
+};
+struct dacfifo_mem_record{
+	struct mem_record;
+};
+struct regfile_mem_record{
+	struct mem_record;
+};
 
 class Mem{
 	public:
@@ -163,4 +185,4 @@ class DACFifoMem : public Mem{
 }//namespace mem
 }//namespace witin
 
-#endif // _ACTIVE_H
+#endif // _MEM_H

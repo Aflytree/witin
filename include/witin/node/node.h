@@ -18,7 +18,6 @@
 namespace witin{
 namespace base{
 
-class Tensor;
 using namespace witin::node;
 
 struct ir_op{
@@ -28,17 +27,8 @@ struct ir_op{
 	int param_size;
 };
 
-//int set_opnode_input_tensor(class OpNode op, int input_idx, Tensor tensor){
-//	//if(tensor->getConsumersNum() >= MAX_CONSUMERS_SIZE)
-//	//{
-//	//	std::cout<<"error in set opnode input tensor"<<std::endl;	
-//	//	return -1;
-//	//}
-//	
-//	op.input_tensors[input_idx] = tensor;
-//
-//
-//}
+class Tensor;
+
 
 class OpNode : public node{
     public:
@@ -53,20 +43,40 @@ class OpNode : public node{
             return name;
         }
 
-		//int set_input_tensors(vector<Tensor> ts){}
-		//int get_input_tensors(vector<Tensor> & ts){}
-		//int set_output_tensors(vector<Tensor> ts){}
-		//int get_output_tensors(vector<Tensor> & ts){}
-		//
-		//virtual std::vector<int> infer_shape(){};
-
+		int set_opnode_input_tensor(class OpNode *op, int input_idx, 
+														Tensor* tensor);
+		int set_input_tensors(vector<Tensor*> ts){}
+		virtual int get_input_tensors(vector<Tensor*> & ts){
+			cout<<"OpNode get input tensors"<<endl;
+		}
+		int set_output_tensors(vector<Tensor*> ts){}
+		int get_output_tensors(vector<Tensor*> & ts){}
+		
+		virtual vector<int> infer_shape(){}
+		virtual vector<int> getInputShape(){}
+		virtual bool isConstTensor(){}
+		virtual int getConstTensor(Tensor &t){}
+		
+		vector<Tensor*> input_tensors;
+		vector<Tensor*> output_tensors;
 	private:
         int id;
 		std::string name;
-		//vector<witin::tensor::Tensor> input_tensors;
-		//vector<Tensor> output_tensors;
+		
 		struct ir_op op;
 };
+
+//int OpNode::set_opnode_input_tensor(class OpNode *op, int input_idx, Tensor* tensor)
+//{
+//	//if(tensor->getConsumersNum() >= MAX_CONSUMERS_SIZE)
+//	//{
+//	//	std::cout<<"error in set opnode input tensor"<<std::endl;	
+//	//	return -1;
+//	//}
+//	
+//	op->input_tensors[input_idx] = tensor;
+//	
+//}
 
 } // namespace node
 } // namespace witin

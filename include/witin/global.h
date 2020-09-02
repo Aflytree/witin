@@ -14,16 +14,19 @@
 
 #include <string>
 #include <string.h>
+#include <stdarg.h>
 #include <vector>
 #include <iostream>
 #include <stdio.h>
 #include <utility>
 #include <deque>
-#include <witin/node/node.h>
-#include <witin/tensor/tensor.h>
+#include <map>
+
+
+//#include <witin/node/node.h>
+//#include <witin/tensor/tensor.h>
 
 using namespace std;
-using namespace witin::base;
 
 enum BASE_OPNODE_ID
 {
@@ -43,5 +46,7 @@ enum BASE_OPNODE_ID
 enum OTHER_OPNODE_ID{
 	CONST_NODE_ID=100
 };
+
+
 
 #endif

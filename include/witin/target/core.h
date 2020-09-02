@@ -4,14 +4,20 @@
 	> Mail: aifei.zhang@witintech.com 
 	> Created Time: Wed Aug 26 19:39:47 2020
  ************************************************************************/
+#pragma once
 #ifndef _ACTIVE_H
 #define _ACTIVE_H
 
 #include <witin/global.h>
 #include <witin/target/mem.h>
 
-using namespace std;
 using namespace witin::mem;
+using namespace witin::base;
+
+map<Tensor, bias_mem_record> tensor_bias_mem_map;
+map<Tensor, array_mem_record> tensor_array_mem_map;
+map<Tensor, dacfifo_mem_record> tensor_dacfifo_mem_map;
+map<Tensor, regfile_mem_record> tensor_regfile_mem_map;
 
 namespace witin{
 namespace core{
@@ -24,27 +30,43 @@ namespace core{
 //bit, not Byte
 #define ROUND_CONFIG_MEM_SIZE 128 * 64
 
+typedef struct weight_params{
+	int start;
+	int end;
+	int size;
+}WEIGHT_PARAMS;
+
+typedef struct bias_params{
+	int start;
+	int end;
+	int size;
+}BIAS_PARAMS;
+
 //array grp
 typedef struct Array_Grp{
-	int rsv;
-	int winy_size;
-	//bias
-	int array_bias_start;
-	int array_bias_end;
-	//precison
-	int precision_trim;
-	//the start and end 
-	//address of adc dataout in column
-	int xs;
-	int xe
-	//store_addr
-	int store_addr;
-	int infer_data_format;
-	int format_con_en;
+	int w_win_column_s;
+	int w_win_column_e;
+	int w_win_column_len;
 	
-	//whethr paused when the cur round done
-	bool round_pause;
+	int w_win_row_s;
+	int w_win_row_e;
+	int w_win_row_len;
+	
+	int store_addr;
+	int store_size;
+
+	WEIGHT_PARAMS w_prams;
+	
 } ARRAY_GRP_CONFIG;
+
+typedef struct Bias_Config{
+	int bias_addr_s;
+	int bias_addr_e;
+	int bias_addr_len;
+
+	BIAS_PARAMS b_prams;
+}BIAS_CONFIG;
+
 
 //matrix mul
 typedef struct Mul_Grp{
@@ -112,7 +134,7 @@ typedef struct Read_Der{
 }READDER_CONFIG;
 
 //spi to dacfifo
-typedef Dacfifo_Grp0{
+typedef struct Dacfifo_Grp0{
 	//start addrss of array-row for spi to dacfifo
 	int ys00;
 	//end
@@ -127,7 +149,7 @@ typedef Dacfifo_Grp0{
 }DACFIFO_GRP0_CONFIG;
 
 // regfile to dacfifo
-typedef Dacfifo_Grp1{
+typedef struct Dacfifo_Grp1{
 	//start and end address of array-row for 
 	//the first layer regfile to dacfifo
 	int ys01;
@@ -141,7 +163,7 @@ typedef Dacfifo_Grp1{
 
 
 //dacfifo  start and end address for arry calculation
-typedef Dacfifo_Grp2{
+typedef struct Dacfifo_Grp2{
 	//start and end address of DACFIFO for 
 	//array calculation
 	int ys_round;
@@ -151,64 +173,30 @@ typedef Dacfifo_Grp2{
 
 
 typedef struct roundControlS{
-	//round configuration packet len per-round
-	int packet_len = 0;
-	//spi to dacfifo enable
-	bool y00_en = 0;
-	//regfile to dacfifo enable
-	bool reactv_en = 0;
+	int cnt;
+	bool array_enable;
+	bool bias_enable;
+	bool act_enable;
+	bool max_enable;
+	bool scale_enable;
+	bool mul_enable;
 	
-	bool y00_sw_en;
-	bool y00_sw_en;
-	
-	//tdnn enable
-	bool tdnn_en = 0;
-	
-	//adc amplitude selection
-	int amp_2_adc;
-	
-	//??
-	int dacff_oper;
-	int dacff_format;
-	bool dacff_invt_sel
-	//??
-	bool s2_sel = 0;
-	bool invt_sel = 0;
-	bool add_sel = 0;
-	bool a0s_sel = 0;
-	bool actv_sel = 0;//activation op
-	
-	int imt_value;
-	bool sft_sel = 0;
-
-    //left or right shift
-	bool sft_lr;
-	//1 2 4 4 5 6 7 8
-	int sft_num;
-	//max_en
-	bool max_pool_en = 0;
-
-	bool am_sel = 0; //re-addition
-	
-	bool mul_en = 0;
-	bool reactv_en = 0;
-	//???
-	int fetch_addr;
-	
-}RD_CONTROL_INTER;
+	//whethr paused when the cur round done
+	bool round_pause;
+}RD_CONTROL_ENABLE;
 
 
 typedef struct RoundControl{
 
-	struct RD_CONTROL_INTER rd_control_inter;
-	struct ARRAY_GRP_CONFIG		array_grp_config;
-	struct MUL_GRP_CONFIG		mul_grp_config;
-	struct READTV_GRP_CONFIG	readtv_grp_config;
-	struct MAX_POOLING_CONFIG	max_pooling_config;
-	struct READDER_CONFIG		readder_config;
-	struct DACFIFO_GRP0_CONFIG	dacfifo_grp0_config;
-	struct DACFIFO_GRP1_CONFIG	dacfifo_grp1_config;
-	struct DACFIFO_GRP2_CONFIG  dacfifo_grp2_config;
+	RD_CONTROL_ENABLE	 rd_control_enable;
+	ARRAY_GRP_CONFIG	 array_grp_config;
+	MUL_GRP_CONFIG		 mul_grp_config;
+	READTV_GRP_CONFIG	 readtv_grp_config;
+	MAX_POOLING_CONFIG	 max_pooling_config;
+	READDER_CONFIG		 readder_config;
+	DACFIFO_GRP0_CONFIG	 dacfifo_grp0_config;
+	DACFIFO_GRP1_CONFIG	 dacfifo_grp1_config;
+	DACFIFO_GRP2_CONFIG  dacfifo_grp2_config;
 
 }ROUND_CONTROL;
 
@@ -218,16 +206,19 @@ typedef struct RoundControl{
  */
 class RoundConfig{
 	public:
-	
+		RoundConfig(){}	
 		RoundConfig(ROUND_CONTROL rc)
 		{
 			roundControl = rc;
 		}
 		
 		int getRoundControl(ROUND_CONTROL rc);
+		int dump(){
+			//dump all round config in this function		
+		}
 	
 	private:
-		struct ROUND_CONTROL roundControl;
+		ROUND_CONTROL roundControl;
 	
 };
 
@@ -238,6 +229,7 @@ class RoundConfig{
 
 class Core{
 	public:
+		Core(){}
 		Core(std::vector<RoundConfig> rc,
 			int roundTotal = 0)
 		{
@@ -249,9 +241,21 @@ class Core{
 		{
 			RoundTotal = t;
 		}	
-		int getRoundTotal(int &t);	
+		int getRoundTotal(int &t){
+			
+			t = RoundTotal;
+			return 0;
+		}	
 		
-		int getRoundConfig(RoundConfig rc)
+		int getRoundConfig(RoundConfig rc);
+		
+		int dump(){
+			int t;
+			getRoundTotal(t);
+			cout<<"RoundTotal:"<<t<<endl;
+		}
+
+
 	private:
 		//RoundConfig
 		std::vector<RoundConfig> rounds;
@@ -271,12 +275,13 @@ class Core{
 
 class multiCore{
 	public:
-		multiCore(std:;vector<Core> c)
+		multiCore(){}
+		multiCore(std::vector<Core> c)
 		{
 			core = c;
 		}
 	private:
-		std::vector<Core> core(4);
+		std::vector<Core> core;
 };
 
 } //namespace core

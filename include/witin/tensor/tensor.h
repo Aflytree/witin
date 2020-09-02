@@ -10,10 +10,11 @@
 #ifndef _TENSOR_H
 #define _TENSOR_H
 
-
 #include <witin/global.h>
 #include <witin/node/node.h>
-//#include <witin/target/mem.h>
+#include <witin/target/mem.h>
+
+#define MAX_CONSUMERS_SIZE 8
 
 namespace witin{
 namespace base{
@@ -25,14 +26,12 @@ class TensorNode{
 class operation{
 };
 
-#define MAX_CONSUMERS_SIZE 8
 
 class OpNode;
 
-
 //template <typename T>
 class Tensor{
-    // const TensorNode* operator ->();
+	const TensorNode* operator ->();
     //typedef T T_
     public: 
 		Tensor();
@@ -44,41 +43,45 @@ class Tensor{
 			ndim = shape.size();
 		}
     	void setShape(std::vector<int> s);
-    	std::vector<int> getShape() const;
-		
+    	vector<int> getShape() const;
 		void print() const;
     	
 		void *getData() const;
     	int getSize(int & size) const;
     	int setData(void * data_in);
 		
-		//int setConsumers(vector<OpNode> ops){}
-		//int getConsumers(vector<OpNode> &ops){}
+		
+		int setConsumers(vector<OpNode> ops){}
+	
+		int getConsumers(vector<OpNode> &ops){}
 		int getConsumersNum()
 		{
 			return 0;
 			//return (int)consumers.size();
 		}
 
-		//int setProducer(OpNode op){}
-		//int getProducer(OpNode &op){}
+		int setProducer(OpNode *op){}
+		int getProducer(OpNode *op){}
 
-		//string getDataType();
+		int getDataType(){ return data_type; }
         operation* op;
 		
 		//type: CONST, PLACEHOLDER
-		//string tensor_type;
+		string tensor_type;
 
     private:
 		//Tensor shape 
 		std::vector<int> shape;
-		
-		//the op produce this Tensor
-		//OpNode producer;
+		//data type  0:int8,  1:float16
+		int data_type;
+		//the operation produce this Tensor
+		OpNode* producer;
+		//the output index  from source operation
+		int value_index{0};
 		//ops who use this tensor 
-		//vector<OpNode> consumers;	
+		vector<OpNode> consumers;	
 		// tensor <<===>> mem_record
-		//struct mem_record * mr; 
+		struct mem_record * mr; 
 		void* __data;
 };
 

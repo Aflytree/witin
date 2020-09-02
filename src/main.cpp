@@ -38,19 +38,22 @@ int fillTensor(Tensor &t, vector<int> shape){
 	{
 		size *= shape[i];
 	}
-
+	cout<<"size1 = "<<size<<endl;
 	data = (char*)malloc(size);
 	
 	for(int i = 0; i < shape[0]; i++)
 	{
 		for(int j = 0; j < shape[1]; j++)
 		{
-			data[i * shape[1] + j] = i + j;		
+			data[i * shape[1] + j] = (char)(i + j);
+			//cout<<"data:"<<(int)(char)(i+j)<<endl;
+			//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
 		}
 	}
 
 	t.setShape(shape);
 	t.setData((void*)data);
+	free(data);
 	return 0;
 }
 
@@ -66,22 +69,43 @@ int main(int argc, char *argv[])
           << std::endl;
     auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
 	
-	Tensor mv_tensor;
+	Tensor mv_tensor1;
+	Tensor mv_tensor2;
+	Tensor mv_tensor3;
+	Tensor mv_tensor4;
 
-	vector<int> mv_shape;
-	mv_shape.push_back(8);
-	mv_shape.push_back(18);
+	vector<int> mv_shape1;
+	vector<int> mv_shape2;
+	vector<int> mv_shape3;
+	vector<int> mv_shape4;
+	mv_shape1.push_back(38);
+	mv_shape1.push_back(128);
+    mv_shape2.push_back(128);
+	mv_shape2.push_back(256);
+    mv_shape3.push_back(256);
+	mv_shape3.push_back(512);
+    mv_shape4.push_back(512);
+	mv_shape4.push_back(18);
+    
+	fillTensor(mv_tensor1, mv_shape1);
+	fillTensor(mv_tensor2, mv_shape2);
+	fillTensor(mv_tensor3, mv_shape3);
+	fillTensor(mv_tensor4, mv_shape4);
+	//mv_tensor1.print();
 	
-    fillTensor(mv_tensor, mv_shape);
-	mv_tensor.print();
-	std::shared_ptr <base1OpNode> mvNode =
-                        std::make_shared<mvOpNode>(mv_tensor, MV_OPNODE_ID,"mvOpNode");
-    std::shared_ptr <base1OpNode> absNode =
-                        std::make_shared<AbsOpNode>(ABS_OPNODE_ID,"abs");
-    std::shared_ptr <base1OpNode> logNode =
-                        std::make_shared<LogOpNode>(2,"log");
-    std::shared_ptr <base1OpNode> logNode1 =
-                        std::make_shared<LogOpNode>(2,"log1");
+	vector<int> shape1 = {38};
+	vector<int> shape2 = {128};
+	vector<int> shape3 = {256};
+	vector<int> shape4 = {512};
+		
+	std::shared_ptr <base1OpNode> mvNode1 =
+                        std::make_shared<mvOpNode>(shape1, mv_tensor1, MV_OPNODE_ID, "mvOpNode1");
+    std::shared_ptr <base1OpNode> mvNode2 =
+						std::make_shared<mvOpNode>(shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode2");
+    std::shared_ptr <base1OpNode> mvNode3 =
+                        std::make_shared<mvOpNode>(shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode3");
+    std::shared_ptr <base1OpNode> mvNode4 =
+                        std::make_shared<mvOpNode>(shape4, mv_tensor4, MV_OPNODE_ID,"mvOpNode4");
     // fy::graph::FyGraphType* graph =  new fy::graph::FyGraphType();
     witin::graph::WitinGraphType graph;
     EdgeProperty ep1;
@@ -92,18 +116,19 @@ int main(int argc, char *argv[])
     ep2.src = 12;
     ep2.dst = 13;
 	
-	graph.addNode(mvNode);
-    graph.addNode(absNode);
-    graph.addNode(logNode);
-    graph.addNode(logNode1);
+	graph.addNode(mvNode1);
+    graph.addNode(mvNode2);
+    graph.addNode(mvNode3);
+    graph.addNode(mvNode4);
     
-	graph.addEdge(mvNode, absNode, ep1);
-	graph.addEdge(absNode, logNode, ep2);
+	graph.addEdge(mvNode1, mvNode2, ep1);
+	graph.addEdge(mvNode2, mvNode3, ep2);
     EdgeProperty ep3;
     ep3.src = 14;
     ep3.src = 15;
-    graph.addEdge(logNode, logNode1, ep3);
-    // graph.addEdge(logNode, logNode1, ep);
+    graph.addEdge(mvNode3, mvNode4, ep3);
+
+    //graph.addEdge(logNode, logNode1, ep);
     //graph.printAllNodes();
 
     //graph.printAllEdges();
@@ -118,12 +143,14 @@ int main(int argc, char *argv[])
 	vector<vector<int> > shapes;
 
 	shape.push_back(1);
-	shape.push_back(8);
+	shape.push_back(38);
 	
 	shapes.push_back(shape);
     //Tensor
 	Tensor input_tensor;
     fillTensor(input_tensor, shape);
+    
+	cout<<"input_tensor:"<<endl;
 	input_tensor.print();
 	
 	std::vector<Tensor> input_tensors;

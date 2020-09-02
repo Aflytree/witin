@@ -11,6 +11,7 @@ file(GLOB SOURCES "src/node/*.cpp"
 	"src/tensor/*.cpp"
 	"src/target/*.cpp"
 	"src/session/*.cpp"
+	"src/utils/*.cpp"
 	"src/main.cpp"
 	)
 file(GLOB DMLC_PATH "3rdparty/dmlc-core/include")
