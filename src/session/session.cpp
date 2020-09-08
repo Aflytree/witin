@@ -4,7 +4,7 @@
 	> Mail: aifei.zhang@witintech.com 
 	> Created Time: Wed Aug 26 19:31:55 2020
  ************************************************************************/
-
+#include <fstream>
 #include <witin/session/session.h>
 #include <witin/graph/graph.h>
 #include <witin/global.h>
@@ -28,8 +28,85 @@ namespace base{
 	/*
 	 * write board config to json 
 	 */
-	int writeToJson(vector<ROUND_CONFIG> rc, string str)
+	int writeToJson(vector<ROUND_CONFIG> rc, string params_path
+										   , string json_path)
 	{
+		Json::Value root;
+		root["params_path"] = params_path;
+		root["round_total"] = (int)rc.size();
+	
+		for(auto i = 0; i < rc.size() ;i++)
+		{
+			Json::Value round_cfg;
+			round_cfg["cnt"] = rc[i].rd_control_enable.cnt; 
+			round_cfg["weight_en"] = rc[i].rd_control_enable.weight_en;
+			round_cfg["bias_en"] = rc[i].rd_control_enable.bias_en;
+			round_cfg["shift_en"] = rc[i].rd_control_enable.shift_en;
+			round_cfg["add_en"] = rc[i].rd_control_enable.add_en;
+			round_cfg["actv_en"] = rc[i].rd_control_enable.actv_en;
+			round_cfg["max_pooling_en"] = rc[i].rd_control_enable.max_pooling_en;
+			round_cfg["reactive_en"] = rc[i].rd_control_enable.reactive_en;
+			round_cfg["mult_en"] = rc[i].rd_control_enable.mult_en;
+			round_cfg["readdr_en"] = rc[i].rd_control_enable.readdr_en;
+			round_cfg["TDNN_en"] = rc[i].rd_control_enable.TDNN_en;
+			round_cfg["fifo_grp0_en"] = rc[i].rd_control_enable.fifo_grp0_en;
+			round_cfg["fifo_grp1_en"] = rc[i].rd_control_enable.fifo_grp1_en;
+			round_cfg["fifo_grp2_en"] = rc[i].rd_control_enable.fifo_grp2_en;
+			round_cfg["round_pause"] =  rc[i].rd_control_enable.round_pause;
+				
+			Json::Value weight;
+			weight["w_win_column_s"] = rc[i].array_grp_config.w_win_column_s; 
+			weight["w_win_column_e"] = rc[i].array_grp_config.w_win_column_e;
+			weight["w_win_column_len"] = rc[i].array_grp_config.w_win_column_len;
+			weight["w_win_row_s"] = rc[i].array_grp_config.w_win_row_s;
+			weight["w_win_row_e"] = rc[i].array_grp_config.w_win_row_e;
+			weight["w_win_row_len"] = rc[i].array_grp_config.w_win_row_len;
+			weight["reg_in_s"] = rc[i].array_grp_config.regfile_addr_start;
+			weight["reg_in_e"] = rc[i].array_grp_config.regfile_addr_start  +
+										rc[i].array_grp_config.regfile_addr_len;
+			weight["reg_out_s"] = rc[i].array_grp_config.store_addr;
+			weight["reg_out_e"] = rc[i].array_grp_config.store_addr + 
+										rc[i].array_grp_config.store_len;
+			
+			Json::Value weight_params;
+			weight_params["start"] = rc[i].array_grp_config.w_prams.start;
+			weight_params["end"] = rc[i].array_grp_config.w_prams.end;
+			weight_params["size"] = rc[i].array_grp_config.w_prams.size;
+			weight["weight_params"] = Json::Value(weight_params);
+			
+			Json::Value actv;
+			actv["type"] = rc[i].actv_grp_config.actv_type;
+			actv["limit"] = rc[i].actv_grp_config.limit;
+			
+			if(rc[i].rd_control_enable.weight_en)
+			{
+				round_cfg["weight"] = Json::Value(weight);
+			}
+
+			if(rc[i].rd_control_enable.actv_en)
+			{
+				round_cfg["actv"] = Json::Value(actv);
+			}
+
+			root["roundConfig"].append(Json::Value(round_cfg));
+		}
+
+		cout<<"FastWriter:"<<endl;
+		Json::FastWriter fw;
+		//Json::StreamWriterBuilder sw;
+		cout<<fw.write(root)<<endl;
+
+		cout<<"StyledWriter:"<<endl;
+		Json::StyledWriter sw;
+		//Json::StreamWriterBuilder sw;
+		cout<<sw.write(root)<<endl;
+
+		//write to file
+		ofstream os;
+		os.open(json_path);
+		os << sw.write(root);
+		os.close();
+		//cout<<root.toStyledString()<<endl;
 		return 0;	
 	}
 	
@@ -85,7 +162,7 @@ namespace base{
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
 	{
 		Json::Value root;
-		string data = "./data.dat";
+		string data = "./params.dat";
 		
 		std::cout<<"Session build "<<std::endl;
 		auto in_nodes = InGraph.inNodes();
@@ -353,8 +430,8 @@ namespace base{
 						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
 						arry_grp_cfg.w_win_row_len = row_size;
 
-						//TODO:print those data to data.dat
-						//need manager file data.dat
+						//TODO:print those data to params.dat
+						//need manager file params.dat
 					}
 				}
 				
@@ -398,9 +475,7 @@ namespace base{
 						{
 							PROGRAM_EXIT(0, "No regFileMem is available !");
 						}				
-					
 					}
-				
 				}
 				dump_rd_ctrl_enable(rce);	
 				dump_arry_grp_cfg(arry_grp_cfg);
@@ -446,8 +521,7 @@ namespace base{
 				vector<int> input_shape = node->getInputShape();
 				if(input_shape.size() == 0)
 				{
-					cout<<"input_shape size is zero"<<endl;
-					exit(1);
+					PROGRAM_EXIT(0, "input_shape size is zero !");
 				}
 				
 				vector<Tensor*> input_tensors;
@@ -470,11 +544,8 @@ namespace base{
 						cout<<"find tensor in tensor_mem_record_map"<<endl;
 						
 						struct mem_record mr = iter->second;
-						
-						//<tensor, mem_record> map
 						arry_grp_cfg.regfile_addr_start = mr.start;
 						arry_grp_cfg.regfile_addr_len = mr.len;
-
 					}
 					else
 					{
@@ -536,8 +607,8 @@ namespace base{
 						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
 						arry_grp_cfg.w_win_row_len = row_size;
 
-						//TODO:print those data to data.dat
-						//need manager file data.dat
+						//TODO:print those data to params.dat
+						//need manager file params.dat
 					}
 				}
 			
@@ -598,15 +669,15 @@ namespace base{
 				rounds.push_back(round_cfg_norm);	
 			}
 		}	
-		writeToJson(rounds, "BoardConfig.json");
+		writeToJson(rounds, data, "BoardConfig.json");
+
 	}	
-	
 	
 	int32_t Session::run(WitinGraphType &InGraph, std::vector<Tensor*> inputs)
 	{
 	
 	}
 
-} //namespace witin
+} //namespace base
 } //namespace witin
 

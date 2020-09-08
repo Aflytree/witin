@@ -202,6 +202,8 @@ typedef struct roundControlS{
 	bool shift_en;
 	bool add_en;
 	bool actv_en;
+	bool max_pooling_en;
+	bool reactive_en;
 	bool mult_en;
 	bool readdr_en;
 	bool TDNN_en;
@@ -220,12 +222,15 @@ typedef struct roundControlS{
 		shift_en = false;
 		add_en = false;
 		actv_en = false;
+		max_pooling_en = false;
+		reactive_en = false;
 		mult_en = false;
 		readdr_en = false;
 		TDNN_en = false;
 		fifo_grp0_en = false;
 		fifo_grp1_en = false;
 		fifo_grp2_en = false;
+		round_pause = false;
 	}
 }RD_CONTROL_ENABLE;
 
