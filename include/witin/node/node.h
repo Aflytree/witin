@@ -18,8 +18,6 @@
 namespace witin{
 namespace base{
 
-using namespace witin::node;
-
 struct ir_op{
 	int op_type;
 	int op_version;
@@ -45,24 +43,52 @@ class OpNode : public node{
 
 		int set_opnode_input_tensor(class OpNode *op, int input_idx, 
 														Tensor* tensor);
-		int set_input_tensors(vector<Tensor*> ts){}
-		virtual int get_input_tensors(vector<Tensor*> & ts){
-			cout<<"OpNode get input tensors"<<endl;
+		int set_input_tensors(vector<Tensor*> ts)
+		{
+			for(auto kv : ts)
+				input_tensors.push_back(kv);
+			//for(int i = 0; i < input_tensors.size();i++)
+			//{
+			//	cout<<"    TENSOR_TYPE:"<<input_tensors[i]->tensor_type<<endl;
+			//}
+			return 0;
 		}
-		int set_output_tensors(vector<Tensor*> ts){}
-		int get_output_tensors(vector<Tensor*> & ts){}
+
+		int set_output_tensors(vector<Tensor*> ts)
+		{
+			for(auto kv : ts)
+				output_tensors.push_back(kv);
+			return 0;
+		}
+
+		int get_output_tensors(vector<Tensor*>  &ts)
+		{
+			for(auto kv : output_tensors)
+			{
+				//kv->print();
+				ts.push_back(kv);
+			}
+			return 0;
+		}
 		
+		int get_input_tensors(vector<Tensor*> &ts)
+		{
+			cout<<"OpNode get input tensors, size = "<<input_tensors.size()<<endl;
+			for(auto kv : input_tensors)
+				ts.push_back(kv);
+			return 0;
+		}
+
 		virtual vector<int> infer_shape(){}
 		virtual vector<int> getInputShape(){}
-		virtual bool isConstTensor(){}
-		virtual int getConstTensor(Tensor &t){}
+		virtual bool isUseConstTensor(){}
+		virtual int getConstTensor(Tensor **t){}
 		
 		vector<Tensor*> input_tensors;
 		vector<Tensor*> output_tensors;
 	private:
         int id;
 		std::string name;
-		
 		struct ir_op op;
 };
 

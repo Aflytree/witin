@@ -11,16 +11,13 @@
 #include <witin/global.h>
 #include <witin/target/mem.h>
 
-using namespace witin::mem;
-using namespace witin::base;
-
-map<Tensor, bias_mem_record> tensor_bias_mem_map;
-map<Tensor, array_mem_record> tensor_array_mem_map;
-map<Tensor, dacfifo_mem_record> tensor_dacfifo_mem_map;
-map<Tensor, regfile_mem_record> tensor_regfile_mem_map;
+//map<Tensor, bias_mem_record> tensor_bias_mem_map;
+//map<Tensor, array_mem_record> tensor_array_mem_map;
+//map<Tensor, dacfifo_mem_record> tensor_dacfifo_mem_map;
+//map<Tensor, regfile_mem_record> tensor_regfile_mem_map;
 
 namespace witin{
-namespace core{
+namespace base{
 
 #define NON_TDNN_MAX_ROUND_NUM 64
 #define NON_TDNN_MIN_ROUND_NUM 21
@@ -53,11 +50,32 @@ typedef struct Array_Grp{
 	int w_win_row_len;
 	
 	int store_addr;
-	int store_size;
+	int store_len;
 
+	int regfile_addr_start;
+	int regfile_addr_len;
 	WEIGHT_PARAMS w_prams;
 	
 } ARRAY_GRP_CONFIG;
+
+
+inline void dump_arry_grp_cfg(ARRAY_GRP_CONFIG agc)
+{
+	cout<<"----------arr_grp_cfg----------"<<endl;
+	cout<<"agc.w_win_column_s : \t"<< agc.w_win_column_s<<endl;
+	cout<<"agc.w_win_column_e : \t"<< agc.w_win_column_e<<endl;
+	cout<<"agc.w_win_column_len : \t"<< agc.w_win_column_len<<endl;
+	cout<<"agc.w_win_row_s : \t"<< agc.w_win_row_s<<endl;
+	cout<<"agc.w_win_row_e : \t"<< agc.w_win_row_e<<endl;
+	cout<<"agc.w_win_row_len : \t"<< agc.w_win_row_len<<endl;
+	cout<<"agc.store_addr : \t"<< agc.store_addr<<endl;
+	cout<<"agc.store_len : \t"<< agc.store_len<<endl;
+	cout<<"agc.regfile_addr_start : \t"<< agc.regfile_addr_start<<endl;
+	cout<<"agc.regfile_addr_len : \t"<< agc.regfile_addr_len<<endl;
+
+	cout<<"WEIGHT_PARAMS : \t"<<endl;
+
+}
 
 typedef struct Bias_Config{
 	int bias_addr_s;
@@ -119,6 +137,11 @@ typedef struct Max_Pooling{
 	int rsv;
 }MAX_POOLING_CONFIG;
 
+typedef struct Actv_Config{
+	string actv_type;
+	int addr;
+	int limit;
+}ACTV_GRP_CONFIG; 
 
 //??? what?
 typedef struct Read_Der{
@@ -174,23 +197,62 @@ typedef struct Dacfifo_Grp2{
 
 typedef struct roundControlS{
 	int cnt;
-	bool array_enable;
-	bool bias_enable;
-	bool act_enable;
-	bool max_enable;
-	bool scale_enable;
-	bool mul_enable;
+	bool weight_en;
+	bool bias_en;
+	bool shift_en;
+	bool add_en;
+	bool actv_en;
+	bool mult_en;
+	bool readdr_en;
+	bool TDNN_en;
+	bool fifo_grp0_en;
+	bool fifo_grp1_en;
+	bool fifo_grp2_en;
 	
-	//whethr paused when the cur round done
+	//whether paused when the cur round done
 	bool round_pause;
+	
+	//default
+	roundControlS(){
+		cnt = 0;
+		weight_en = true;
+		bias_en  = false;
+		shift_en = false;
+		add_en = false;
+		actv_en = false;
+		mult_en = false;
+		readdr_en = false;
+		TDNN_en = false;
+		fifo_grp0_en = false;
+		fifo_grp1_en = false;
+		fifo_grp2_en = false;
+	}
 }RD_CONTROL_ENABLE;
 
+inline void dump_rd_ctrl_enable(RD_CONTROL_ENABLE rce)
+{
+	cout<<"----------RD_CONTROL_ENABLE----------"<<endl;
+	cout<<"rce.cnt : \t"<< rce.cnt<<endl;
+	cout<<"rce.weight_en : \t"<< rce.weight_en<<endl;
+	cout<<"rce.bias_en : \t "<< rce.bias_en<<endl;
+	cout<<"rce.shift_en : \t"<< rce.shift_en<<endl;
+	cout<<"rce.add_en : \t"<< rce.add_en<<endl;
+	cout<<"rce.actv_en : \t"<< rce.actv_en<<endl;
+	cout<<"rce.mult_en : \t"<< rce.mult_en<<endl;
+	cout<<"rce.readdr_en : \t"<< rce.readdr_en<<endl;
+	cout<<"rce.TDNN_en : \t"<< rce.TDNN_en<<endl;
+	cout<<"rce.fifo_grp0_en : \t"<< rce.fifo_grp0_en<<endl;
+	cout<<"rce.fifo_grp1_en : \t"<< rce.fifo_grp1_en<<endl;
+	cout<<"rce.fifo_grp2_en : \t"<< rce.fifo_grp2_en<<endl;
+	cout<<endl;
+}
 
 typedef struct RoundControl{
 
 	RD_CONTROL_ENABLE	 rd_control_enable;
 	ARRAY_GRP_CONFIG	 array_grp_config;
 	MUL_GRP_CONFIG		 mul_grp_config;
+	ACTV_GRP_CONFIG		 actv_grp_config;
 	READTV_GRP_CONFIG	 readtv_grp_config;
 	MAX_POOLING_CONFIG	 max_pooling_config;
 	READDER_CONFIG		 readder_config;
@@ -198,29 +260,29 @@ typedef struct RoundControl{
 	DACFIFO_GRP1_CONFIG	 dacfifo_grp1_config;
 	DACFIFO_GRP2_CONFIG  dacfifo_grp2_config;
 
-}ROUND_CONTROL;
+}ROUND_CONFIG;
 
-/*
- * control of a ROUND, including top control
- * and submodule control
- */
-class RoundConfig{
-	public:
-		RoundConfig(){}	
-		RoundConfig(ROUND_CONTROL rc)
-		{
-			roundControl = rc;
-		}
-		
-		int getRoundControl(ROUND_CONTROL rc);
-		int dump(){
-			//dump all round config in this function		
-		}
-	
-	private:
-		ROUND_CONTROL roundControl;
-	
-};
+///*
+// * control of a ROUND, including top control
+// * and submodule control
+// */
+//class RoundConfig{
+//	public:
+//		RoundConfig(){}	
+//		RoundConfig(ROUND_CONTROL rc)
+//		{
+//			roundControl = rc;
+//		}
+//		
+//		int getRoundControl(ROUND_CONTROL rc);
+//		int dump(){
+//			//dump all round config in this function		
+//		}
+//	
+//	private:
+//		ROUND_CONTROL roundControl;
+//	
+//};
 
 /*
  * single core 
@@ -230,7 +292,7 @@ class RoundConfig{
 class Core{
 	public:
 		Core(){}
-		Core(std::vector<RoundConfig> rc,
+		Core(std::vector<ROUND_CONFIG> rc,
 			int roundTotal = 0)
 		{
 			rounds = rc;
@@ -247,25 +309,21 @@ class Core{
 			return 0;
 		}	
 		
-		int getRoundConfig(RoundConfig rc);
+		int getRoundConfig(ROUND_CONFIG rc);
 		
 		int dump(){
 			int t;
 			getRoundTotal(t);
 			cout<<"RoundTotal:"<<t<<endl;
 		}
-
-
+		
 	private:
-		//RoundConfig
-		std::vector<RoundConfig> rounds;
+		//ROUND_CONFIG
+		std::vector<ROUND_CONFIG> rounds;
 		int RoundTotal = 0;
 		
 		//Mem resource
-		class RegFileMem		regFileMem;
-		class BiasRegionMem     biasRegionMem;
-		class CaculateArryMem   caculateArryMem; 
-		class DACFifoMem		dacFiflMem;
+		
 };
 
 /*

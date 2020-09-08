@@ -13,9 +13,8 @@
 #include <witin/global.h>
 
 namespace witin{
-namespace pool{
+namespace base{
 
-//using namespace witin::node;
 
 class poolOpNode : public OpNode{
     public:
@@ -31,7 +30,7 @@ class poolOpNode : public OpNode{
         std::string name;
 };
 
-} //namespace pool
+} //namespace base
 } //namespace witin
 
 #endif //POOLING_H

@@ -14,7 +14,7 @@
 #include <witin/global.h>
 
 namespace witin{
-namespace active{
+namespace base{
 
 //using namespace witin::node;
 

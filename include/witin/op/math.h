@@ -13,9 +13,8 @@
 #include <witin/global.h>
 
 namespace witin{
-namespace math{
+namespace base{
 
-using namespace witin::base;
 
 class LogOpNode : public OpNode{
     public:

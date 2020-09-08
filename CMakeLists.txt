@@ -38,6 +38,7 @@ add_compile_options(-ljsoncpp)
 aux_source_directory(. DIR_SRCS)
 #为源文件的编译添加选项
 #ADD_DEFINITIONS(-g -W -Wall -o2 )
+ADD_DEFINITIONS(-g)
 link_directories(./lib)
 message(STATUS "add exectable")
 

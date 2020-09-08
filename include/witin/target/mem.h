@@ -11,15 +11,16 @@
 
 #include <witin/global.h>
 #include <witin/tensor/tensor.h>
+#include <witin/utils/debug.h>
 
 namespace witin{
-namespace mem{
+namespace base{
 
 //BIAS
 #define BIAS_MEM_SIZE 16*1024
 
 //ARRAY
-#define ARRAY_MEM_SIZE			2*1024 * 1*1024
+#define ARRAY_MEM_SIZE		2*1024 * 1*1024
 #define ARRAY_ROW_SIZE	    2*1024
 #define ARRAY_COLUMN_SIZE   1*1024
 
@@ -27,22 +28,32 @@ namespace mem{
 #define DAC_FIFO_SIZE		1*1024 
 
 //REGFILE
-#define REGFILE_MEM_SIZE		4*1024
+#define REGFILE_MEM_SIZE	4*1024
 #define REGFILE_MODE		0  //not TDNN
 #define REGFILE_1K_SIZE		1*1024 
 #define REGFILE_3K_SIZE		3*1024 
 
 
-class RegFileMem;
-class BiasRegionMem;
-class CaculateArryMem; 
-class DACFifoMem;
+enum MEM_TYPE{
+	REGFILE_MEM_TYPE = 0,
+	ARRAY_MEM_TYPE,
+	BIAS_MEM_TYPE,
+	DACFIFO_MEM_TYPE
+};
+
 
 struct mem_record{
-	//class Tensor * tensor;
-	int used;
+	class Tensor * tensor;
+	//int used; 
+	//regfile mem
 	int start;
 	int len;
+	//for ArryMem
+	int column_start;
+	int column_len;
+	int row_start;
+	int row_len;
+	enum MEM_TYPE mem_type;
 };
 
 struct bias_mem_record{
@@ -74,16 +85,38 @@ class RegFileMem : public Mem{
 		int getDACFifoSize();
 		int getGenealSize();
 
-		int allocMemAddr(int& addr, int size);
+		int allocMemAddr(int addr, int size)
+		{
+			if(addr < 0 || size < 0)
+			{
+				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate RegFileMem!");
+			}
+			cout<<__FILE__<<__LINE__<<" : addr "<<addr<<" size "<<size<<endl;
+			if((generalUsedSize + size) > REGFILE_MEM_SIZE)
+			{
+				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate RegFileMem!");
+			}
+
+			generalUsedSize+=size;
+			return 0;
+		}
+		
 		int freeMemAddr(int addr, int size);
 		int check_addr(int addr);
-		int getAvailableMem();
+		int getGeneralUsedSize()
+		{
+			return generalUsedSize;	
+		}
+
+		int getAvailableMem()
+		{
+			return REGFILE_MEM_SIZE - getGeneralUsedSize(); 
+		}
 		
 		//whether split into 1 and 3
 		//defalut to 0, not split
 		int Mode = 0;
-
-	private:
+		
 		int regfileSize = REGFILE_MEM_SIZE;
 		//is intended for dac 
 		int dacFifoSize = REGFILE_1K_SIZE;
@@ -93,6 +126,8 @@ class RegFileMem : public Mem{
 		int dacFifoUsedSize = 0;
 		int generalUsedSize = 0;
 };
+
+//extern class RegFileMem regFileMem;
 
 //bias mem
 class BiasRegionMem : public Mem{
@@ -115,6 +150,8 @@ class BiasRegionMem : public Mem{
 		int biasRegionUsedEnd = 0;
 };
 
+//static class BiasRegionMem biasRegionMem;
+
 //array mem
 //row
 //column
@@ -126,14 +163,62 @@ class CaculateArryMem : public Mem{
 		int init(){}
 
 		//get available mem
-		int getRowAvailableMem();
-		int getColumnAvailableMem();
+		int getRowAvailableMem()
+		{
+			return ARRAY_ROW_SIZE - arrayRowUsedSize;
+		}
+		int getColumnAvailableMem()
+		{
+			return 	ARRAY_COLUMN_SIZE - arrayColumnUsedSize;
+		}
+		
+		int getArryColumnUsedSize()
+		{
+			cout<<"debug--------------------- : "<<arrayColumnUsedSize<<endl;
+			return arrayColumnUsedSize;	
+		}
+		
+		int getArryRowUsedSize()
+		{
+			return arrayRowUsedSize;	
+		}
 		
 		//alloc Mem
-		int allocRowMem(int addr, int size);
-		int allocColumnMem(int addr, int size);
+		int allocRowMem(int rowAddr, int size)
+		{
+			cout<<__FILE__<<__LINE__<<" : rowaddr "<<rowAddr<<" size "<<size<<endl;
+			if(rowAddr < 0 || size < 0)
+			{
+				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate row CaculateArryMem!");
+			}
+
+			if((arrayRowUsedSize + size) > ARRAY_ROW_SIZE)
+			{
+				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate row CaculateArryMem!");
+			}
+
+			arrayRowUsedSize+=size;
+			return 0;
+		}
+		
+		int allocColumnMem(int columnAddr, int size)
+		{
+			cout<<__FILE__<<__LINE__<<" : columnAddr "<<columnAddr<<" size "<<size<<endl;
+			if(columnAddr < 0 || size < 0)
+			{
+				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate column CaculateArryMem!");
+			}
+
+			if((arrayColumnUsedSize + size) > ARRAY_ROW_SIZE)
+			{
+				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate column CaculateArryMem!");
+			}
+
+			arrayColumnUsedSize+=size;
+			return 0;
+		
+		}
 			
-	private:
 		//array size
 		int arraySize = ARRAY_MEM_SIZE;
 		int arrayRowSize = ARRAY_ROW_SIZE;
@@ -158,6 +243,7 @@ class CaculateArryMem : public Mem{
 		int arrayTotalUsedSize = 0;
 };
 
+
 //dacfifo mem
 class DACFifoMem : public Mem{
 	public:
@@ -181,6 +267,7 @@ class DACFifoMem : public Mem{
 		int dacFifoUsedEnd = 0;
 };
 
+//static class DACFifoMem dacFifoMem;
 
 }//namespace mem
 }//namespace witin

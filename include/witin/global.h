@@ -21,10 +21,7 @@
 #include <utility>
 #include <deque>
 #include <map>
-
-
-//#include <witin/node/node.h>
-//#include <witin/tensor/tensor.h>
+#include <json/json.h>
 
 using namespace std;
 
@@ -46,7 +43,5 @@ enum BASE_OPNODE_ID
 enum OTHER_OPNODE_ID{
 	CONST_NODE_ID=100
 };
-
-
 
 #endif

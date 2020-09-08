@@ -10,10 +10,8 @@
 #include<witin/global.h>
 #include<witin/target/core.h>
 
-using namespace witin::mem;
-
 namespace witin{
-namespace chip{
+namespace base{
 
 /*
  * single chip

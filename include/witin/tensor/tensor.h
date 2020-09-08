@@ -19,22 +19,47 @@
 namespace witin{
 namespace base{
 
-
-class TensorNode{
+class TensorNode
+{
 };
 
-class operation{
+class operation
+{
 };
-
 
 class OpNode;
 
+enum TENSOR_TYPE
+{
+	CONST_TYPE = 0,
+	PLACEHOLDER_TYPE,
+	NORMAL_TYPE
+};
+
+enum DATA_TYPE
+{
+	INT8_TYPE = 0,
+	INT16_TYPE,
+	FP16_TYPE,
+	FP32_TYPE
+};
+
+
 //template <typename T>
 class Tensor{
-	const TensorNode* operator ->();
+	//const TensorNode* operator ->();
     //typedef T T_
     public: 
+		//default
 		Tensor();
+		
+		Tensor(vector<int> shape, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE, 
+								  int data_type = INT8_TYPE)
+		{
+			this->shape = shape;
+			this->data_type = data_type;
+			this->tensor_type = tensor_type;
+		}
 		
 		bool operator ==(const Tensor & other) const;
     	bool operator !=(const Tensor & other) const;
@@ -65,9 +90,12 @@ class Tensor{
 
 		int getDataType(){ return data_type; }
         operation* op;
-		
+	
 		//type: CONST, PLACEHOLDER
-		string tensor_type;
+		enum TENSOR_TYPE tensor_type;
+		
+		int fillTensor(Tensor &t, vector<int> shape, void *data,
+						bool random);
 
     private:
 		//Tensor shape 
@@ -85,8 +113,7 @@ class Tensor{
 		void* __data;
 };
 
-
-}// namespace tensor
+}// namespace base
 }// namespace witin
 
 #endif //TENSOR_H

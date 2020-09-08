@@ -5,14 +5,10 @@
 	> Created Time: Wed Sep  2 16:26:04 2020
  ************************************************************************/
 
-#include <witin/global.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <cstdlib>
 #include <witin/utils/debug.h>
-
-
-
-namespace witin{
-namespace debug{
-
 
 void PROGRAM_EXIT(int reason, const char*fmt, ...)
 {
@@ -21,11 +17,11 @@ void PROGRAM_EXIT(int reason, const char*fmt, ...)
 	va_start(args, fmt);
 	vsprintf(tmp_buf, fmt, args);
 
-	printf("ERROR:%s",tmp_buf);
+	printf("ERROR:%s\n",tmp_buf);
 
 	switch(reason){
 		case 1:
-			printf("please check\n");
+			printf("please check up reason!\n");
 			break;
 		default:
 			break;
@@ -36,7 +32,4 @@ void PROGRAM_EXIT(int reason, const char*fmt, ...)
 	}
 
 }
-
-} // namespace debug
-} // namespace witin
 

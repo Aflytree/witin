@@ -12,24 +12,18 @@
 #include <stdio.h>
 #include <boost/version.hpp>
 #include <dmlc/logging.h>
-#include <witin/node/node.h>
+//#include <witin/node/node.h>
 #include <witin/graph/graph.h>
-#include <witin/op/math.h>
+#include <witin/tensor/tensor.h>
 #include <witin/op/nn.h>
 #include <witin/session/session.h>
-#include <witin/global.h>
 
 using namespace std;
-//using namespace witin::node;
-using namespace witin::graph;
-using namespace witin::math;
-using namespace witin::session;
 using namespace witin::base;
-using namespace witin::nn;
 
 typedef witin::base::OpNode base1OpNode;
 
-int fillTensor(Tensor &t, vector<int> shape){
+int fillTensor1(Tensor *t, vector<int> shape){
 	
 	
 	char * data;
@@ -50,9 +44,13 @@ int fillTensor(Tensor &t, vector<int> shape){
 			//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
 		}
 	}
-
-	t.setShape(shape);
-	t.setData((void*)data);
+	
+	for(auto kv : shape)
+	{
+		cout<<"kv = "<<kv<<endl;
+	}
+	t->setShape(shape);
+	t->setData((void*)data);
 	free(data);
 	return 0;
 }
@@ -67,13 +65,19 @@ int main(int argc, char *argv[])
           << "."
           << BOOST_VERSION % 100
           << std::endl;
-    auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
+    //auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
 	
-	Tensor mv_tensor1;
-	Tensor mv_tensor2;
-	Tensor mv_tensor3;
-	Tensor mv_tensor4;
+	Tensor *mv_tensor1 = (Tensor * )malloc(sizeof(Tensor));
+	Tensor *mv_tensor2 = (Tensor * )malloc(sizeof(Tensor));
+	Tensor *mv_tensor3 = (Tensor * )malloc(sizeof(Tensor));
+	Tensor *mv_tensor4 = (Tensor * )malloc(sizeof(Tensor));
 
+	mv_tensor1->tensor_type = CONST_TYPE;
+	mv_tensor2->tensor_type = CONST_TYPE;
+	mv_tensor3->tensor_type = CONST_TYPE;
+	mv_tensor4->tensor_type = CONST_TYPE;
+	
+	cout<<"CONST_TYPE:"<<CONST_TYPE<<endl;
 	vector<int> mv_shape1;
 	vector<int> mv_shape2;
 	vector<int> mv_shape3;
@@ -87,11 +91,11 @@ int main(int argc, char *argv[])
     mv_shape4.push_back(512);
 	mv_shape4.push_back(18);
     
-	fillTensor(mv_tensor1, mv_shape1);
-	fillTensor(mv_tensor2, mv_shape2);
-	fillTensor(mv_tensor3, mv_shape3);
-	fillTensor(mv_tensor4, mv_shape4);
-	//mv_tensor1.print();
+	fillTensor1(mv_tensor1, mv_shape1);
+	fillTensor1(mv_tensor2, mv_shape2);
+	fillTensor1(mv_tensor3, mv_shape3);
+	fillTensor1(mv_tensor4, mv_shape4);
+	//mv_tensor1->print();
 	
 	vector<int> shape1 = {38};
 	vector<int> shape2 = {128};
@@ -107,11 +111,10 @@ int main(int argc, char *argv[])
     std::shared_ptr <base1OpNode> mvNode4 =
                         std::make_shared<mvOpNode>(shape4, mv_tensor4, MV_OPNODE_ID,"mvOpNode4");
     // fy::graph::FyGraphType* graph =  new fy::graph::FyGraphType();
-    witin::graph::WitinGraphType graph;
+	witin::base::WitinGraphType graph;
     EdgeProperty ep1;
     ep1.src = 10;
     ep1.dst = 11;
-    
 	EdgeProperty ep2;
     ep2.src = 12;
     ep2.dst = 13;
@@ -127,11 +130,9 @@ int main(int argc, char *argv[])
     ep3.src = 14;
     ep3.src = 15;
     graph.addEdge(mvNode3, mvNode4, ep3);
+    graph.printAllNodes();
 
-    //graph.addEdge(logNode, logNode1, ep);
-    //graph.printAllNodes();
-
-    //graph.printAllEdges();
+    graph.printAllEdges();
     graph.print();
 	
 	auto out = graph.outNodes();
@@ -139,21 +140,24 @@ int main(int argc, char *argv[])
 	auto in = graph.inNodes();
 	cout <<"in.size() = "<<in.size()<<endl;
 
-	vector<int> shape;
+	vector<int> input_shape;
 	vector<vector<int> > shapes;
 
-	shape.push_back(1);
-	shape.push_back(38);
+	input_shape.push_back(1);
+	input_shape.push_back(38);
 	
-	shapes.push_back(shape);
+	//shapes.push_back(shape);
     //Tensor
-	Tensor input_tensor;
-    fillTensor(input_tensor, shape);
-    
+	Tensor *input_tensor = (Tensor * )malloc(sizeof(Tensor));
+	input_tensor->tensor_type = CONST_TYPE;
+    //fillTensor1(input_tensor, input_shape);
+    //
+	cout<<"test point 7"<<endl; 
 	cout<<"input_tensor:"<<endl;
-	input_tensor.print();
+	//input_tensor->print();
 	
-	std::vector<Tensor> input_tensors;
+	cout<<"test point 8"<<endl; 
+	std::vector<Tensor*> input_tensors;
 	input_tensors.push_back(input_tensor);
 
 	////Session
@@ -161,24 +165,24 @@ int main(int argc, char *argv[])
 	ss.build(graph,shapes);
 	ss.run(graph, input_tensors);
 
-	//free data;
+	////free data;
 
 
-	// auto s = graph.getAllNodes();
-    // DLOG(INFO) <<" nodes size: "<<s.size();
+	//// auto s = graph.getAllNodes();
+    //// DLOG(INFO) <<" nodes size: "<<s.size();
 
-    // graph->AddVertex(logNode);
-    // DLOG(INFO)<<"add abs node.";
+    //// graph->AddVertex(logNode);
+    //// DLOG(INFO)<<"add abs node.";
 
-    // EdgeProperty edge;
-    // edge.src=0;
-    // edge.dst=1;
-    // graph->addEdge(baseNode, absNode1, edge);
-    // DLOG(INFO)<<"add log node.";
-    // graph->addNode(logNode);
-    // DLOG(INFO)<<"get all node.";
-    // graph->getAllNodes();
-    // graph->print();
+    //// EdgeProperty edge;
+    //// edge.src=0;
+    //// edge.dst=1;
+    //// graph->addEdge(baseNode, absNode1, edge);
+    //// DLOG(INFO)<<"add log node.";
+    //// graph->addNode(logNode);
+    //// DLOG(INFO)<<"get all node.";
+    //// graph->getAllNodes();
+    //// graph->print();
 
     return 0;
 }

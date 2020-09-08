@@ -13,7 +13,7 @@
 #include "../global.h"
 
 namespace witin{
-namespace node{
+namespace base{
 
 class node{
     public:

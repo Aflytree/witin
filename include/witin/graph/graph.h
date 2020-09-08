@@ -24,10 +24,9 @@ namespace boost {
 }
 
 namespace witin{
-namespace graph{
+namespace base{
 
 using namespace boost;
-using namespace witin::base;
 
 struct EdgeProperty{
     int src;
@@ -156,6 +155,48 @@ class witin_graph
 				}
 			}
 			return idegree;
+		}
+	
+		/* 
+		 * get in nodes of a node
+		 */
+		std::vector<NodeDataType> innodes_of_node(NodeDataType node)
+		{
+			std::vector<NodeDataType> node_list;
+			vertex_range_t vrange = vertices(inter_graph);
+			auto vertexprop = get(boost::vertex_name, inter_graph);
+			
+            edge_range_t erange = edges(inter_graph);
+			
+			if(erange.first == erange.second)
+			{
+				cout<<"Empty Edges In Inter_graph!"<<endl;
+            }
+
+            for(edge_iter itr = erange.first; itr != erange.second; ++itr)
+			{
+                auto vertexprop = get(boost::edge_weight, inter_graph);
+                auto s = get(boost::vertex_name, inter_graph, source(*itr, inter_graph));
+                auto t = get(boost::vertex_name, inter_graph, target(*itr, inter_graph));
+                
+				if(node == t)
+				{
+					node_list.push_back(s);	
+					cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
+					    t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
+				}
+            }  
+			return node_list;
+		}
+		
+		/* 
+		 * get out nodes of a node
+		 */
+		std::vector<NodeDataType> outnodes_of_node(NodeDataType node)
+		{
+		
+		
+		
 		}
 
 
@@ -305,7 +346,6 @@ class witin_graph
 		vector<NodeDataType> graph_topological_sort()
 		{
 			std::vector<NodeDataType> ret;
-			cout <<"dfs  visitor is begin !"<<endl;
 			deque<int> top_order;
 			topological_sort(inter_graph, front_inserter(top_order));		
 			
@@ -314,18 +354,15 @@ class witin_graph
 			{
 				NodeDataType node = vertexprop[k];
 				ret.push_back(node);
+				cout<<node->getName()<<endl;
 			}
-			cout<<"ret.size():"<<ret.size()<<endl;	
 			return ret;
 		}
         
-		
 		vector<NodeDataType> DFS();
 		vector<NodeDataType> BFS();
 
-        int32_t writeToPDF(char const *filename)
-		{
-        }
+        int32_t writeToPDF(char const *filename){}
 
     private:
         graph_type_ inter_graph;
@@ -333,7 +370,7 @@ class witin_graph
         std::map<NodeDataType, Vertex> local_map_;
 };
 
-typedef witin::graph::witin_graph<baseOpNodePtr, EdgeProperty> WitinGraphType;
+typedef witin::base::witin_graph<baseOpNodePtr, EdgeProperty> WitinGraphType;
 
 }// namespace graph
 }// namespace witin

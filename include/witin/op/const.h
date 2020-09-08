@@ -12,7 +12,7 @@
 #include <witin/global.h>
 
 namespace witin{
-namespace cnst{
+namespace base{
 
 //using namespace witin::node;
 

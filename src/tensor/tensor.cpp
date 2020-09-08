@@ -30,8 +30,13 @@ namespace base{
     
 	void Tensor::setShape(std::vector<int> s) {
 		//shape = s;
+		cout<<"size = "<<s.size()<<endl;
+		cout<<"shape.size = "<<shape.size()<<endl;
 		for(auto kv : s){
+			cout<<"setShape = "<<kv<<endl;
 			shape.push_back(kv);
+			cout<<"shape.size = "<<shape.size()<<endl;
+			cout<<"setShape = "<<kv<<endl;
 		}
     }
     
@@ -69,18 +74,53 @@ namespace base{
 			cout<<sp<<" ";
 		}
 		cout<<endl;
-		
-		cout<<"Data is:"<<endl;
-		int size = 0;
-		getSize(size);
-		for(int i = 0;i < size; i++){
-			cout<<(int)((char*)__data)[i]<<" ";
-			if(i % 10 == 0 && i != 0)
-				cout<<endl;
+		cout<<"Tensor type:"<<tensor_type<<endl;	
+		if(tensor_type == CONST_TYPE)
+		{
+			cout<<"Data is:"<<endl;
+			int size = 0;
+			getSize(size);
+			for(int i = 0;i < size; i++){
+				cout<<(int)((char*)__data)[i]<<" ";
+				if(i % 10 == 0 && i != 0)
+					cout<<endl;
+			}
 		}
 		cout<<endl;
 		cout<<"=========================="<<endl;
 	}
+
+	int fillTensor(Tensor &t, vector<int> shape, void * value
+					,bool random = 1)
+	{
+		char * data;
+		int size = 1;
+		for(size_t i = 0; i < shape.size();i++)
+		{
+			size *= shape[i];
+		}
+		cout<<"size1 = "<<size<<endl;
+		data = (char*)malloc(size);
+		
+		if(random)
+		{
+			for(int i = 0; i < shape[0]; i++)
+			{
+				for(int j = 0; j < shape[1]; j++)
+				{
+					data[i * shape[1] + j] = (char)(i + j);
+					//cout<<"data:"<<(int)(char)(i+j)<<endl;
+					//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
+				}
+			}
+		}
+		t.setShape(shape);
+		t.setData((void*)data);
+		free(data);
+		return 0;
+	}
+
+
 
 
 }// namespace tensor
