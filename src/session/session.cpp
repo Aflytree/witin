@@ -167,7 +167,7 @@ namespace base{
 		FILE*stream = fopen("./params.dat", "w");
 		int file_offset = 0;
 
-		std::cout<<"Session build "<<std::endl;
+		std::cout<<"*******************Session build******************* "<<std::endl;
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
 		Core core;

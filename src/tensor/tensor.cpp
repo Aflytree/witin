@@ -29,14 +29,10 @@ namespace base{
     //}
     
 	void Tensor::setShape(std::vector<int> s) {
-		//shape = s;
-		cout<<"size = "<<s.size()<<endl;
-		cout<<"shape.size = "<<shape.size()<<endl;
-		for(auto kv : s){
-			cout<<"setShape = "<<kv<<endl;
+		
+		for(auto kv : s)
+		{
 			shape.push_back(kv);
-			cout<<"shape.size = "<<shape.size()<<endl;
-			cout<<"setShape = "<<kv<<endl;
 		}
     }
     

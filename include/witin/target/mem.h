@@ -91,7 +91,7 @@ class RegFileMem : public Mem{
 			{
 				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate RegFileMem!");
 			}
-			cout<<__FILE__<<__LINE__<<" : addr "<<addr<<" size "<<size<<endl;
+			cout<<__FILE__<<__LINE__<<" :REGFILE addr "<<addr<<" size "<<size<<endl;
 			if((generalUsedSize + size) > REGFILE_MEM_SIZE)
 			{
 				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate RegFileMem!");
@@ -185,7 +185,7 @@ class CaculateArryMem : public Mem{
 		//alloc Mem
 		int allocRowMem(int rowAddr, int size)
 		{
-			cout<<__FILE__<<__LINE__<<" : rowaddr "<<rowAddr<<" size "<<size<<endl;
+			cout<<__FILE__<<__LINE__<<" :ARRAY rowaddr "<<rowAddr<<" size "<<size<<endl;
 			if(rowAddr < 0 || size < 0)
 			{
 				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate row CaculateArryMem!");
@@ -202,7 +202,7 @@ class CaculateArryMem : public Mem{
 		
 		int allocColumnMem(int columnAddr, int size)
 		{
-			cout<<__FILE__<<__LINE__<<" : columnAddr "<<columnAddr<<" size "<<size<<endl;
+			cout<<__FILE__<<__LINE__<<" :ARRAY columnAddr "<<columnAddr<<" size "<<size<<endl;
 			if(columnAddr < 0 || size < 0)
 			{
 				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate column CaculateArryMem!");

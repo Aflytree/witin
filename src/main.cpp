@@ -33,7 +33,6 @@ int fillTensor1(Tensor *t, vector<int> shape){
 	{
 		size *= shape[i];
 	}
-	cout<<"size1 = "<<size<<endl;
 	data = (char*)malloc(size);
 	
 	for(int i = 0; i < shape[0]; i++)
@@ -41,19 +40,14 @@ int fillTensor1(Tensor *t, vector<int> shape){
 		for(int j = 0; j < shape[1]; j++)
 		{
 			data[i * shape[1] + j] = ((i + j) % 127);
-				
-			if(shape[0] == 2)
-			{
-				cout<<"generate:"<<(int)(char)(i+j)<<endl;
-			}
-				//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
+			//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
 		}
 	}
 	
-	for(auto kv : shape)
-	{
-		cout<<"kv = "<<kv<<endl;
-	}
+	//for(auto kv : shape)
+	//{
+	//	cout<<"kv = "<<kv<<endl;
+	//}
 	t->setShape(shape);
 	t->setData((void*)data);
 	free(data);
@@ -82,7 +76,6 @@ int main(int argc, char *argv[])
 	mv_tensor3->tensor_type = CONST_TYPE;
 	mv_tensor4->tensor_type = CONST_TYPE;
 	
-	cout<<"CONST_TYPE:"<<CONST_TYPE<<endl;
 	vector<int> mv_shape1;
 	vector<int> mv_shape2;
 	vector<int> mv_shape3;
@@ -135,15 +128,15 @@ int main(int argc, char *argv[])
     ep3.src = 14;
     ep3.src = 15;
     graph.addEdge(mvNode3, mvNode4, ep3);
-    graph.printAllNodes();
-
-    graph.printAllEdges();
+    //graph.printAllNodes();
+    //graph.printAllEdges();
     graph.print();
 	
 	auto out = graph.outNodes();
-	cout <<"out.size() = "<<out.size()<<endl;
+	cout <<"GRAPH output node size = "<<out.size()<<endl;
+
 	auto in = graph.inNodes();
-	cout <<"in.size() = "<<in.size()<<endl;
+	cout <<"GRAPH input node size = "<<in.size()<<endl;
 
 	vector<int> input_shape;
 	vector<vector<int> > shapes;
@@ -157,11 +150,8 @@ int main(int argc, char *argv[])
 	input_tensor->tensor_type = CONST_TYPE;
     //fillTensor1(input_tensor, input_shape);
     //
-	cout<<"test point 7"<<endl; 
-	cout<<"input_tensor:"<<endl;
 	//input_tensor->print();
 	
-	cout<<"test point 8"<<endl; 
 	std::vector<Tensor*> input_tensors;
 	input_tensors.push_back(input_tensor);
 
