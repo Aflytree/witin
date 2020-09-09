@@ -450,16 +450,17 @@ namespace base{
 							}
 						}
 
-						//file ptr ahead column_size * row_size
-						file_offset += column_size * row_size;
 						
 						//fix point in current example
 						//row 
 						weight_params.start = file_offset;
-						weight_params.end = column_size * row_size;
+						weight_params.end = file_offset + column_size * row_size;
 						weight_params.size = column_size * row_size;
+						
+						//file ptr ahead column_size * row_size
+						file_offset += column_size * row_size;
+						
 						arry_grp_cfg.w_prams = weight_params;
-
 					}
 				}
 				

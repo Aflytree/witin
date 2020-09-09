@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	vector<int> mv_shape4;
 	mv_shape1.push_back(38);
 	mv_shape1.push_back(128);
-    mv_shape2.push_back(130);
+    mv_shape2.push_back(128);
 	mv_shape2.push_back(256);
     mv_shape3.push_back(256);
 	mv_shape3.push_back(512);
