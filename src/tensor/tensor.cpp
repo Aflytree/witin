@@ -54,6 +54,7 @@ namespace base{
 	}
 	
     void* Tensor::getData() const {
+		return (void*)__data;
 	}
     
 	int Tensor::getSize(int &s) const {

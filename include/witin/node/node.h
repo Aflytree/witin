@@ -73,7 +73,7 @@ class OpNode : public node{
 		
 		int get_input_tensors(vector<Tensor*> &ts)
 		{
-			cout<<"OpNode get input tensors, size = "<<input_tensors.size()<<endl;
+			//cout<<"OpNode get input tensors, size = "<<input_tensors.size()<<endl;
 			for(auto kv : input_tensors)
 				ts.push_back(kv);
 			return 0;

@@ -73,7 +73,11 @@ inline void dump_arry_grp_cfg(ARRAY_GRP_CONFIG agc)
 	cout<<"agc.regfile_addr_start : \t"<< agc.regfile_addr_start<<endl;
 	cout<<"agc.regfile_addr_len : \t"<< agc.regfile_addr_len<<endl;
 
-	cout<<"WEIGHT_PARAMS : \t"<<endl;
+	cout<<"WEIGHT_PARAMS : "<<endl;
+	cout<<"     start : \t"<<agc.w_prams.start<<endl;
+	cout<<"       end : \t"<<agc.w_prams.end<<endl;
+	cout<<"      size : \t"<<agc.w_prams.size<<endl;
+
 
 }
 

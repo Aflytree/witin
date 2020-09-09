@@ -10,6 +10,7 @@
 #include <string>
 #include <cstring>
 #include <stdio.h>
+#include <math.h>
 #include <boost/version.hpp>
 #include <dmlc/logging.h>
 //#include <witin/node/node.h>
@@ -39,9 +40,13 @@ int fillTensor1(Tensor *t, vector<int> shape){
 	{
 		for(int j = 0; j < shape[1]; j++)
 		{
-			data[i * shape[1] + j] = (char)(i + j);
-			//cout<<"data:"<<(int)(char)(i+j)<<endl;
-			//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
+			data[i * shape[1] + j] = ((i + j) % 127);
+				
+			if(shape[0] == 2)
+			{
+				cout<<"generate:"<<(int)(char)(i+j)<<endl;
+			}
+				//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
 		}
 	}
 	
@@ -84,7 +89,7 @@ int main(int argc, char *argv[])
 	vector<int> mv_shape4;
 	mv_shape1.push_back(38);
 	mv_shape1.push_back(128);
-    mv_shape2.push_back(128);
+    mv_shape2.push_back(130);
 	mv_shape2.push_back(256);
     mv_shape3.push_back(256);
 	mv_shape3.push_back(512);

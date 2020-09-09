@@ -31,6 +31,7 @@ namespace base{
 	int writeToJson(vector<ROUND_CONFIG> rc, string params_path
 										   , string json_path)
 	{
+		cout<<"JSON CPP VERSION:"<<JSONCPP_VERSION_STRING<<endl;
 		Json::Value root;
 		root["params_path"] = params_path;
 		root["round_total"] = (int)rc.size();
@@ -94,12 +95,12 @@ namespace base{
 		cout<<"FastWriter:"<<endl;
 		Json::FastWriter fw;
 		//Json::StreamWriterBuilder sw;
-		cout<<fw.write(root)<<endl;
+		//cout<<fw.write(root)<<endl;
 
 		cout<<"StyledWriter:"<<endl;
 		Json::StyledWriter sw;
 		//Json::StreamWriterBuilder sw;
-		cout<<sw.write(root)<<endl;
+		//cout<<sw.write(root)<<endl;
 
 		//write to file
 		ofstream os;
@@ -163,7 +164,9 @@ namespace base{
 	{
 		Json::Value root;
 		string data = "./params.dat";
-		
+		FILE*stream = fopen("./params.dat", "w");
+		int file_offset = 0;
+
 		std::cout<<"Session build "<<std::endl;
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
@@ -311,7 +314,8 @@ namespace base{
 				rce.actv_en = true;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
 				ACTV_GRP_CONFIG actv_grp_cfg;
-				
+				WEIGHT_PARAMS weight_params;
+
 				actv_grp_cfg.actv_type = "relu";
 				actv_grp_cfg.limit= 127;
 
@@ -328,10 +332,9 @@ namespace base{
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
 				
+				cout<<__FILE__<<":"<<__LINE__<<": INPUTNODE input_tensors size = "<<input_tensors.size()<<endl;
 				for(int j = 0; j < input_tensors.size();j++)
 				{
-					cout<<__FILE__<<": "<<__LINE__<<": input_tensors tensor_type = "<<input_tensors[j]->tensor_type<<endl;
-					//input_tensors[j]->print();
 					if(input_tensors[j]->tensor_type == PLACEHOLDER_TYPE)
 					{
 						//1.allocate mem for input if not none : regfile mem
@@ -432,6 +435,31 @@ namespace base{
 
 						//TODO:print those data to params.dat
 						//need manager file params.dat
+
+						cout<<__FILE__<<": "<<__LINE__<<": print weight to params.dat "<<endl;
+						//input_tensors[j]->print();
+						
+						for(int fp = 0; fp < row_size ;fp++)
+						{
+							for(int fm = 0; fm < column_size ;fm++)
+							{
+								char fdata = ((char*)input_tensors[j]->getData())[fm + fp * column_size];
+								//cout<<" data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata<<endl;
+
+								fprintf(stream, "%c", fdata);
+							}
+						}
+
+						//file ptr ahead column_size * row_size
+						file_offset += column_size * row_size;
+						
+						//fix point in current example
+						//row 
+						weight_params.start = file_offset;
+						weight_params.end = column_size * row_size;
+						weight_params.size = column_size * row_size;
+						arry_grp_cfg.w_prams = weight_params;
+
 					}
 				}
 				
@@ -439,6 +467,7 @@ namespace base{
 				vector<Tensor*> output_tensors;
 				node->get_output_tensors(output_tensors);
 				
+				cout<<__FILE__<<":"<<__LINE__<<": INPUTNODE out_tensors size = "<<output_tensors.size()<<endl;
 				for(int k = 0; k < output_tensors.size();k++)
 				{
 					if(output_tensors[k]->tensor_type == PLACEHOLDER_TYPE)
@@ -512,6 +541,7 @@ namespace base{
 				
 				ROUND_CONFIG round_cfg_norm;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
+				WEIGHT_PARAMS weight_params;
 				ACTV_GRP_CONFIG actv_grp_cfg;
 				actv_grp_cfg.actv_type = "relu";
 				actv_grp_cfg.limit= 127;
@@ -531,7 +561,7 @@ namespace base{
 				//tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 				//											(input_tensors[j], mr));	
 				
-				cout<<__FILE__<<":"<<__LINE__<<": input_tensors size = "<<input_tensors.size()<<endl;
+				cout<<__FILE__<<":"<<__LINE__<<": NORM input_tensors size = "<<input_tensors.size()<<endl;
 				for(size_t n = 0; n < input_tensors.size();n++ )
 				{
 				
@@ -609,6 +639,27 @@ namespace base{
 
 						//TODO:print those data to params.dat
 						//need manager file params.dat
+						
+						for(int fp = 0; fp < row_size ;fp++)
+						{
+							for(int fm = 0; fm < column_size; fm++)
+							{
+								char fdata = ((char*)input_tensors[n]->getData())[fm + fp * column_size];
+								fprintf(stream, "%c", fdata);
+							}
+						}
+						
+						//cout<<__FILE__<<":"<<__LINE__<<": debug point "<<endl;
+						//fix point in current example
+						//row 
+						weight_params.start = file_offset;
+						weight_params.end = file_offset + column_size * row_size;
+						weight_params.size = column_size * row_size;
+
+						//file ptr ahead column_size * row_size
+						file_offset += column_size * row_size;
+						
+						arry_grp_cfg.w_prams = weight_params;
 					}
 				}
 			
@@ -616,6 +667,7 @@ namespace base{
 				vector<Tensor*> norm_output_tensors;
 				node->get_output_tensors(norm_output_tensors);
 			
+				cout<<__FILE__<<":"<<__LINE__<<": NORM output_tensors size = "<<norm_output_tensors.size()<<endl;
 				for(int m = 0; m < norm_output_tensors.size();m++)
 				{
 					if(norm_output_tensors[m]->tensor_type == PLACEHOLDER_TYPE)
@@ -669,6 +721,8 @@ namespace base{
 				rounds.push_back(round_cfg_norm);	
 			}
 		}	
+		
+		fclose(stream); 
 		writeToJson(rounds, data, "BoardConfig.json");
 
 	}	

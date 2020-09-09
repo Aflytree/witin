@@ -174,7 +174,6 @@ class CaculateArryMem : public Mem{
 		
 		int getArryColumnUsedSize()
 		{
-			cout<<"debug--------------------- : "<<arrayColumnUsedSize<<endl;
 			return arrayColumnUsedSize;	
 		}
 		
