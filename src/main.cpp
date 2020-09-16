@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 	vector<int> mv_shape2;
 	vector<int> mv_shape3;
 	vector<int> mv_shape4;
+	mv_shape1.push_back(1);
 	mv_shape1.push_back(38);
 	mv_shape1.push_back(128);
     mv_shape2.push_back(128);
@@ -94,10 +95,10 @@ int main(int argc, char *argv[])
 	fillTensor1(mv_tensor4, mv_shape4);
 	//mv_tensor1->print();
 	
-	vector<int> shape1 = {38};
-	vector<int> shape2 = {128};
-	vector<int> shape3 = {256};
-	vector<int> shape4 = {512};
+	vector<int> shape1 = {1, 38};
+	vector<int> shape2 = {1, 128};
+	vector<int> shape3 = {1, 256};
+	vector<int> shape4 = {1, 512};
 		
 	std::shared_ptr <base1OpNode> mvNode1 =
                         std::make_shared<mvOpNode>(shape1, mv_tensor1, MV_OPNODE_ID, "mvOpNode1");

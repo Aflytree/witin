@@ -50,12 +50,13 @@ class mvOpNode : public OpNode{
 		
 			vector<int> input2_shape = t->getShape();
 			
-			if(input1_shape.size() != 1 || input2_shape.size() != 2)
+			if(input1_shape.size() != 2 || input2_shape.size() != 2)
 			{
-				PROGRAM_EXIT(0, "[infer_shape] mvOpNode shape size should be 2!");
+				DLOG(INFO)<<"[infer_shape] mvOpNode shape size should be 2!";
 			}
 			vector<int> out_shape;
 			
+			out_shape.push_back(input1_shape[0]);
 			out_shape.push_back(input2_shape[1]);
 			//out_shape.assign((int)input1_shape.size() - 1, input2_shape[1]);
 			for(auto kv : out_shape)

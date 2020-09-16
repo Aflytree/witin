@@ -209,7 +209,7 @@ namespace base{
 				
 				if(input_shape.size() == 0)
 				{
-					PROGRAM_EXIT(0, "input_shape size is zero !");
+					LOG(FATAL)<<"input_shape size is zero !";
 				}
 				
 				//Tensor in(input_shape, PLACEHOLDER_TYPE);
@@ -217,7 +217,7 @@ namespace base{
 				//input_tensor_ptr = &in;
 				input_tensors.push_back(input_tensor_ptr);
 
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": tensor_type = "<<input_tensor_ptr->tensor_type;
+				DLOG(INFO)<<": tensor_type = "<<input_tensor_ptr->tensor_type;
 				if(node->isUseConstTensor())
 				{
 					Tensor* const_tensor;
@@ -225,7 +225,7 @@ namespace base{
 					input_tensors.push_back(const_tensor);
 				}
 
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": input_tensors size = "<<input_tensors.size();
+				DLOG(INFO)<<": input_tensors size = "<<input_tensors.size();
 				//set node input tensor
 				node->set_input_tensors(input_tensors);
 
@@ -249,8 +249,8 @@ namespace base{
 				
 				for(auto kk : tmp_tensors)
 				{
-					DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": "<<node->getName();
-					DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": output_tensor";
+					DLOG(INFO)<<": "<<node->getName();
+					DLOG(INFO)<<": output_tensor";
 					kk->print();
 				}
 			}
@@ -277,7 +277,7 @@ namespace base{
 					DLOG(INFO)<<innodes[j]->getName();		
 					for(auto kv : previous_output_tensors)
 					{
-						DLOG(INFO)<<__FILE__<<__LINE__<<" : input_tensor";
+						DLOG(INFO)<<" : input_tensor";
 						kv->print();
 						input_tensors.push_back(kv);
 					}
@@ -290,7 +290,7 @@ namespace base{
 					node->getConstTensor(&const_tensor);
 					input_tensors.push_back(const_tensor);
 				}
-				DLOG(INFO)<<__FILE__<<__LINE__<<"input_tensors.size : "<<input_tensors.size();
+				DLOG(INFO)<<"input_tensors.size : "<<input_tensors.size();
 				//set node input tensor
 				node->set_input_tensors(input_tensors);
 				
@@ -301,7 +301,7 @@ namespace base{
 				//Tensor out(out_shape, PLACEHOLDER_TYPE);
 				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
 				output_tensors.push_back(output_tensor_ptr);
-				DLOG(INFO)<<__FILE__<<__LINE__<<"out_tensors.size : "<<output_tensors.size();
+				DLOG(INFO)<<"out_tensors.size : "<<output_tensors.size();
 				//set node output tensor
 				node->set_output_tensors(output_tensors);
 			}
@@ -311,7 +311,7 @@ namespace base{
 		//input / output : regfile 
 		
 		DLOG(INFO)<<"===============================alloc===============================";
-		DLOG(INFO)<<"Generate config for every round ...";
+		DLOG(INFO)<<"Alloc memory and generate config for every round ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
 			if(isInputNode(op_list[i], in_nodes))
@@ -334,15 +334,15 @@ namespace base{
 							
 				//getShape
 				vector<int> input_shape = node->getInputShape();
-				if(input_shape.size() != 1)
+				if(input_shape.size() != 2)
 				{
-					PROGRAM_EXIT(1, "input_shape size should be 1");
+					LOG(FATAL)<<"input_shape size should be 2";
 				}
 				
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
 				
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": INPUTNODE input_tensors size = "<<input_tensors.size();
+				DLOG(INFO)<<": INPUTNODE input_tensors size = "<<input_tensors.size();
 				for(int j = 0; j < input_tensors.size();j++)
 				{
 					if(input_tensors[j]->tensor_type == PLACEHOLDER_TYPE)
@@ -352,25 +352,25 @@ namespace base{
 						if(availeMem > 0)
 						{
 							int start_alloc_addr = regFileMem.getGeneralUsedSize();
-							DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": start_alloc_addr "<<start_alloc_addr;
-							DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": availeMem "<<availeMem;
+							DLOG(INFO)<<": start_alloc_addr "<<start_alloc_addr;
+							DLOG(INFO)<<": availeMem "<<availeMem;
 							
-							if(availeMem > input_shape[0])
+							if(availeMem > input_shape[1])
 							{
-								regFileMem.allocMemAddr(start_alloc_addr, input_shape[0]);	
+								regFileMem.allocMemAddr(start_alloc_addr, input_shape[1]);	
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "regFileMem is not enough for input shape !");
+								LOG(FATAL)<<"regFileMem is not enough for input shape !";
 							}
 
 							struct mem_record mr;
 							mr.mem_type = REGFILE_MEM_TYPE;
 							mr.start = start_alloc_addr;
-							mr.len = input_shape[0];
+							mr.len = input_shape[1];
 				
 							arry_grp_cfg.regfile_addr_start = start_alloc_addr;
-							arry_grp_cfg.regfile_addr_len = input_shape[0];
+							arry_grp_cfg.regfile_addr_len = input_shape[1];
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(input_tensors[j], mr));
@@ -378,7 +378,7 @@ namespace base{
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No regFileMem is available !");
+							LOG(FATAL)<<"No regFileMem is available !";
 						}
 					}
 					//2.allocate mem for const Tensor if not none, : array mem 
@@ -399,12 +399,12 @@ namespace base{
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "caculateArryMem is not enough for COLUMN allocate!");
+								LOG(FATAL)<<"caculateArryMem is not enough for COLUMN allocate!";
 							}
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No caculateColumnArryMem is available !");
+							LOG(FATAL)<<"No caculateColumnArryMem is available !";
 						}
 
 						int availeRowMem = caculateArryMem.getRowAvailableMem();				
@@ -419,12 +419,12 @@ namespace base{
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "caculateArryMem is not enough for ROW allocate!");
+								LOG(FATAL)<<"caculateArryMem is not enough for ROW allocate!";
 							}
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No caculateRowArryMem is available !");
+							LOG(FATAL)<<"No caculateRowArryMem is available !";
 						}
 
 						struct mem_record mr;
@@ -446,7 +446,7 @@ namespace base{
 						//TODO:print those data to params.dat
 						//need manager file params.dat
 
-						DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": print weight to params.dat ";
+						DLOG(INFO)<<": print weight to params.dat ";
 						//input_tensors[j]->print();
 						
 						for(int fp = 0; fp < row_size ;fp++)
@@ -478,7 +478,7 @@ namespace base{
 				vector<Tensor*> output_tensors;
 				node->get_output_tensors(output_tensors);
 				
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": INPUTNODE out_tensors size = "<<output_tensors.size();
+				DLOG(INFO)<<": INPUTNODE out_tensors size = "<<output_tensors.size();
 				for(int k = 0; k < output_tensors.size();k++)
 				{
 					if(output_tensors[k]->tensor_type == PLACEHOLDER_TYPE)
@@ -491,29 +491,29 @@ namespace base{
 						if( availeMem > 0)
 						{
 							int start_alloc_addr = regFileMem.getGeneralUsedSize();
-							if(availeMem > tensor_shape[0])
+							if(availeMem > tensor_shape[1])
 							{
-								regFileMem.allocMemAddr(start_alloc_addr, tensor_shape[0]);	
+								regFileMem.allocMemAddr(start_alloc_addr, tensor_shape[1]);	
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "regFileMem is not enough for input shape !");
+								LOG(FATAL)<<"regFileMem is not enough for input shape !";
 							}
 
 							struct mem_record mr;
 							mr.mem_type = REGFILE_MEM_TYPE;
 							mr.start = start_alloc_addr;
-							mr.len = tensor_shape[0];
+							mr.len = tensor_shape[1];
 				
 							arry_grp_cfg.store_addr = start_alloc_addr;
-							arry_grp_cfg.store_len = tensor_shape[0];
+							arry_grp_cfg.store_len = tensor_shape[1];
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(output_tensors[k], mr));
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No regFileMem is available !");
+							LOG(FATAL)<<"No regFileMem is available !";
 						}				
 					}
 				}
@@ -562,7 +562,7 @@ namespace base{
 				vector<int> input_shape = node->getInputShape();
 				if(input_shape.size() == 0)
 				{
-					PROGRAM_EXIT(0, "input_shape size is zero !");
+					LOG(FATAL)<<"input_shape size is zero !";
 				}
 				
 				vector<Tensor*> input_tensors;
@@ -572,7 +572,7 @@ namespace base{
 				//tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 				//											(input_tensors[j], mr));	
 				
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": NORM input_tensors size = "<<input_tensors.size();
+				DLOG(INFO)<<": NORM input_tensors size = "<<input_tensors.size();
 				for(size_t n = 0; n < input_tensors.size();n++ )
 				{
 				
@@ -612,12 +612,12 @@ namespace base{
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "caculateArryMem is not enough for column allocate!");
+								LOG(FATAL)<<"caculateArryMem is not enough for column allocate!";
 							}
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No caculateColumnArryMem is available !");
+							LOG(FATAL)<<"No caculateColumnArryMem is available !";
 						}
 
 						int row_size =  input_tensors[n]->getShape()[0];
@@ -630,7 +630,7 @@ namespace base{
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "caculateArryMem is not enough for Row allocate!");
+							LOG(FATAL)<<"caculateArryMem is not enough for Row allocate!";
 						}
 							
 						struct mem_record mr;
@@ -678,7 +678,7 @@ namespace base{
 				vector<Tensor*> norm_output_tensors;
 				node->get_output_tensors(norm_output_tensors);
 			
-				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": NORM output_tensors size = "<<norm_output_tensors.size();
+				DLOG(INFO)<<": NORM output_tensors size = "<<norm_output_tensors.size();
 				for(int m = 0; m < norm_output_tensors.size();m++)
 				{
 					if(norm_output_tensors[m]->tensor_type == PLACEHOLDER_TYPE)
@@ -691,29 +691,29 @@ namespace base{
 						if(normAvaileMem > 0)
 						{
 							int start_alloc_addr = regFileMem.getGeneralUsedSize();
-							if(normAvaileMem > tensor_shape[0])
+							if(normAvaileMem > tensor_shape[1])
 							{
-								regFileMem.allocMemAddr(start_alloc_addr, tensor_shape[0]);	
+								regFileMem.allocMemAddr(start_alloc_addr, tensor_shape[1]);	
 							}
 							else
 							{
-								PROGRAM_EXIT(0, "norm regFileMem is not enough for input shape !");
+								LOG(FATAL)<< "norm regFileMem is not enough for input shape !";
 							}
 
 							struct mem_record mr;
 							mr.mem_type = REGFILE_MEM_TYPE;
 							mr.start = start_alloc_addr;
-							mr.len = tensor_shape[0];
+							mr.len = tensor_shape[1];
 				
 							arry_grp_cfg.store_addr = start_alloc_addr;
-							arry_grp_cfg.store_len = tensor_shape[0];
+							arry_grp_cfg.store_len = tensor_shape[1];
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(norm_output_tensors[m], mr));
 						}
 						else
 						{
-							PROGRAM_EXIT(0, "No regFileMem is available !");
+							LOG(FATAL)<<"No regFileMem is available !";
 						}				
 					}
 				}
