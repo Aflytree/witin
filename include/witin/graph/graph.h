@@ -141,10 +141,9 @@ class witin_graph
 
 			//for(boost::tie(i,end) = vertices(inter_graph); i != end; ++i)
 			//{
-			//	cout << *i << " <-- ";
+			//	DLOG(INFO) << *i << " <-- ";
 			//	for (boost::tie(ei,edge_end) = in_edges(*i, inter_graph); ei != edge_end; ++ei)
-			//		cout << source(*ei, inter_graph) << "  ";
-			//	cout << endl;
+			//		DLOG(INFO) << source(*ei, inter_graph) << "  ";
 			//}
 			int idegree = 0;
 			for(auto kv : local_map_)
@@ -170,7 +169,7 @@ class witin_graph
 			
 			if(erange.first == erange.second)
 			{
-				cout<<"Empty Edges In Inter_graph!"<<endl;
+				DLOG(INFO)<<"Empty Edges In Inter_graph!";
             }
 
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
@@ -182,8 +181,8 @@ class witin_graph
 				if(node == t)
 				{
 					node_list.push_back(s);	
-					cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
-					    t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
+					DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
+					    t->getName() <<"["<<target(*itr, inter_graph) <<"]";
 				}
             }  
 			return node_list;
@@ -261,7 +260,7 @@ class witin_graph
             auto vertexprop = get(boost::vertex_name, inter_graph);
             for(vertex_iter itr = vrange.first; itr!=vrange.second; ++itr){
                 NodeDataType vprop = vertexprop[*itr];
-                cout <<vprop->getName() <<"["<<*itr <<"]"<< endl;
+                DLOG(INFO) <<vprop->getName() <<"["<<*itr <<"]";
             }
         };
     
@@ -278,7 +277,7 @@ class witin_graph
             for(vertex_iter itr = vrange.first; itr!=vrange.second; ++itr){
                 NodeDataType vprop = vertexprop[*itr];
                 v.push_back(vprop);
-                DLOG(INFO)<<vprop;
+                //DLOG(INFO)<<vprop;
             }
             return v;
         };
@@ -293,7 +292,7 @@ class witin_graph
             
 			if(erange.first == erange.second)
 			{
-				cout<<"Empty Edges In Inter_graph!"<<endl;
+				DLOG(INFO)<<"Empty Edges In Inter_graph!";
                 return;
             }
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
@@ -301,8 +300,8 @@ class witin_graph
                 auto vertexprop = get(boost::edge_weight, inter_graph);
                 auto s = get(boost::vertex_name, inter_graph, source(*itr, inter_graph));
                 auto t = get(boost::vertex_name, inter_graph, target(*itr, inter_graph));
-                cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
-                    t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
+                DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
+                    t->getName() <<"["<<target(*itr, inter_graph) <<"]";
             }
         }
 		
@@ -312,12 +311,12 @@ class witin_graph
         void print()
 		{
             DLOG(INFO)<<"Dump Graph:";
-            cout<<"=========================="<<endl;
-            cout<<"graph nodes:"<<endl;
+            DLOG(INFO)<<"==========================";
+            DLOG(INFO)<<"graph nodes:";
 			printAllNodes();
-            cout<<"graph edges:"<<endl;
+            DLOG(INFO)<<"graph edges:";
             printAllEdges();
-            cout<<"=========================="<<endl;
+            DLOG(INFO)<<"==========================";
         }
         
 		/* 
@@ -354,7 +353,7 @@ class witin_graph
 			{
 				NodeDataType node = vertexprop[k];
 				ret.push_back(node);
-				cout<<node->getName()<<endl;
+				DLOG(INFO)<<node->getName();
 			}
 			return ret;
 		}

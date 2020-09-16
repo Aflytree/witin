@@ -61,24 +61,22 @@ typedef struct Array_Grp{
 
 inline void dump_arry_grp_cfg(ARRAY_GRP_CONFIG agc)
 {
-	cout<<"----------arr_grp_cfg----------"<<endl;
-	cout<<"agc.w_win_column_s : \t"<< agc.w_win_column_s<<endl;
-	cout<<"agc.w_win_column_e : \t"<< agc.w_win_column_e<<endl;
-	cout<<"agc.w_win_column_len : \t"<< agc.w_win_column_len<<endl;
-	cout<<"agc.w_win_row_s : \t"<< agc.w_win_row_s<<endl;
-	cout<<"agc.w_win_row_e : \t"<< agc.w_win_row_e<<endl;
-	cout<<"agc.w_win_row_len : \t"<< agc.w_win_row_len<<endl;
-	cout<<"agc.store_addr : \t"<< agc.store_addr<<endl;
-	cout<<"agc.store_len : \t"<< agc.store_len<<endl;
-	cout<<"agc.regfile_addr_start : \t"<< agc.regfile_addr_start<<endl;
-	cout<<"agc.regfile_addr_len : \t"<< agc.regfile_addr_len<<endl;
+	DLOG(INFO)<<"----------arr_grp_cfg----------";
+	DLOG(INFO)<<"agc.w_win_column_s : \t"<< agc.w_win_column_s;
+	DLOG(INFO)<<"agc.w_win_column_e : \t"<< agc.w_win_column_e;
+	DLOG(INFO)<<"agc.w_win_column_len : \t"<< agc.w_win_column_len;
+	DLOG(INFO)<<"agc.w_win_row_s : \t"<< agc.w_win_row_s;
+	DLOG(INFO)<<"agc.w_win_row_e : \t"<< agc.w_win_row_e;
+	DLOG(INFO)<<"agc.w_win_row_len : \t"<< agc.w_win_row_len;
+	DLOG(INFO)<<"agc.store_addr : \t"<< agc.store_addr;
+	DLOG(INFO)<<"agc.store_len : \t"<< agc.store_len;
+	DLOG(INFO)<<"agc.regfile_addr_start : \t"<< agc.regfile_addr_start;
+	DLOG(INFO)<<"agc.regfile_addr_len : \t"<< agc.regfile_addr_len;
 
-	cout<<"WEIGHT_PARAMS : "<<endl;
-	cout<<"     start : \t"<<agc.w_prams.start<<endl;
-	cout<<"       end : \t"<<agc.w_prams.end<<endl;
-	cout<<"      size : \t"<<agc.w_prams.size<<endl;
-
-
+	DLOG(INFO)<<"WEIGHT_PARAMS : ";
+	DLOG(INFO)<<"     start : \t"<<agc.w_prams.start;
+	DLOG(INFO)<<"       end : \t"<<agc.w_prams.end;
+	DLOG(INFO)<<"      size : \t"<<agc.w_prams.size;
 }
 
 typedef struct Bias_Config{
@@ -240,20 +238,19 @@ typedef struct roundControlS{
 
 inline void dump_rd_ctrl_enable(RD_CONTROL_ENABLE rce)
 {
-	cout<<"----------RD_CONTROL_ENABLE----------"<<endl;
-	cout<<"rce.cnt : \t"<< rce.cnt<<endl;
-	cout<<"rce.weight_en : \t"<< rce.weight_en<<endl;
-	cout<<"rce.bias_en : \t "<< rce.bias_en<<endl;
-	cout<<"rce.shift_en : \t"<< rce.shift_en<<endl;
-	cout<<"rce.add_en : \t"<< rce.add_en<<endl;
-	cout<<"rce.actv_en : \t"<< rce.actv_en<<endl;
-	cout<<"rce.mult_en : \t"<< rce.mult_en<<endl;
-	cout<<"rce.readdr_en : \t"<< rce.readdr_en<<endl;
-	cout<<"rce.TDNN_en : \t"<< rce.TDNN_en<<endl;
-	cout<<"rce.fifo_grp0_en : \t"<< rce.fifo_grp0_en<<endl;
-	cout<<"rce.fifo_grp1_en : \t"<< rce.fifo_grp1_en<<endl;
-	cout<<"rce.fifo_grp2_en : \t"<< rce.fifo_grp2_en<<endl;
-	cout<<endl;
+	DLOG(INFO)<<"----------RD_CONTROL_ENABLE----------";
+	DLOG(INFO)<<"rce.cnt : \t"<< rce.cnt;
+	DLOG(INFO)<<"rce.weight_en : \t"<< rce.weight_en;
+	DLOG(INFO)<<"rce.bias_en : \t "<< rce.bias_en;
+	DLOG(INFO)<<"rce.shift_en : \t"<< rce.shift_en;
+	DLOG(INFO)<<"rce.add_en : \t"<< rce.add_en;
+	DLOG(INFO)<<"rce.actv_en : \t"<< rce.actv_en;
+	DLOG(INFO)<<"rce.mult_en : \t"<< rce.mult_en;
+	DLOG(INFO)<<"rce.readdr_en : \t"<< rce.readdr_en;
+	DLOG(INFO)<<"rce.TDNN_en : \t"<< rce.TDNN_en;
+	DLOG(INFO)<<"rce.fifo_grp0_en : \t"<< rce.fifo_grp0_en;
+	DLOG(INFO)<<"rce.fifo_grp1_en : \t"<< rce.fifo_grp1_en;
+	DLOG(INFO)<<"rce.fifo_grp2_en : \t"<< rce.fifo_grp2_en;
 }
 
 typedef struct RoundControl{
@@ -323,7 +320,7 @@ class Core{
 		int dump(){
 			int t;
 			getRoundTotal(t);
-			cout<<"RoundTotal:"<<t<<endl;
+			DLOG(INFO)<<"RoundTotal:"<<t;
 		}
 		
 	private:

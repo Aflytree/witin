@@ -23,6 +23,7 @@
 #include <map>
 //#include <json/json.h>
 #include </usr/local/include/json/json.h>
+#include <dmlc/logging.h>
 
 using namespace std;
 

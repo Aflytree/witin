@@ -27,7 +27,7 @@ typedef witin::base::OpNode base1OpNode;
 
 int main(int argc, char *argv[])
 {
-    DLOG(INFO)<<"main test";
+    //DLOG(INFO)<<"main test";
     std::cout << "Boost version: "  //1.58.0
           << BOOST_VERSION / 100000
           << "."

@@ -53,7 +53,7 @@ class Tensor{
 		//default
 		Tensor();
 		
-		Tensor(vector<int> shape, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE, 
+		Tensor(vector<int> shape = {}, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE, 
 								  int data_type = INT8_TYPE)
 		{
 			this->shape = shape;

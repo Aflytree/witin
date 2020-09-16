@@ -49,7 +49,7 @@ class OpNode : public node{
 				input_tensors.push_back(kv);
 			//for(int i = 0; i < input_tensors.size();i++)
 			//{
-			//	cout<<"    TENSOR_TYPE:"<<input_tensors[i]->tensor_type<<endl;
+			//	DLOG(INFO)<<"    TENSOR_TYPE:"<<input_tensors[i]->tensor_type;
 			//}
 			return 0;
 		}
@@ -73,7 +73,7 @@ class OpNode : public node{
 		
 		int get_input_tensors(vector<Tensor*> &ts)
 		{
-			//cout<<"OpNode get input tensors, size = "<<input_tensors.size()<<endl;
+			//DLOG(INFO)<<"OpNode get input tensors, size = "<<input_tensors.size();
 			for(auto kv : input_tensors)
 				ts.push_back(kv);
 			return 0;
@@ -96,7 +96,7 @@ class OpNode : public node{
 //{
 //	//if(tensor->getConsumersNum() >= MAX_CONSUMERS_SIZE)
 //	//{
-//	//	std::cout<<"error in set opnode input tensor"<<std::endl;	
+//	//	DLOG(INFO)<<"error in set opnode input tensor"<<;	
 //	//	return -1;
 //	//}
 //	

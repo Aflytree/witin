@@ -42,6 +42,7 @@ ADD_DEFINITIONS(-g)
 link_directories(./lib)
 message(STATUS "add exectable")
 
+add_definitions(-DDMLC_LOG_DEBUG=1)
 #set(CMAKE_SOURCE_DIR ..)
 set(CMAKE_MODULE_PATH ${CMAKE_ROOT}/Modules  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 find_package(libdb_cxx REQUIRED)
@@ -63,6 +64,7 @@ target_link_libraries(witin_excu jsoncpp)
 
 
 add_library(witin SHARED ${SOURCES})
-SET_TARGET_PROPERTIES(witin PROPERTIES VERSION 1.0 SOVERSION 1)
+target_link_libraries(witin jsoncpp)
+#SET_TARGET_PROPERTIES(witin PROPERTIES VERSION 1.0 SOVERSION 1)
 
 #add_subdirectory(tests)

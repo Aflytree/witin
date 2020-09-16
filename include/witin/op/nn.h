@@ -39,7 +39,7 @@ class mvOpNode : public OpNode{
 		
 		//int get_input_tensors(vector<Tensor*> & ts)
 		//{
-		//	cout<<"mvOpNode get input tensors"<<endl;
+		//	DLOG(INFO)<<"mvOpNode get input tensors";
 		//}
 		
 		vector<int> infer_shape()
@@ -61,7 +61,7 @@ class mvOpNode : public OpNode{
 			for(auto kv : out_shape)
 			{
 			
-				cout<<"[infer shape] out_shape : "<<kv<<endl;
+				DLOG(INFO)<<"[infer shape] out_shape : "<<kv;
 			}
 			return out_shape;
 		};

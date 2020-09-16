@@ -40,13 +40,13 @@ int fillTensor1(Tensor *t, vector<int> shape){
 		for(int j = 0; j < shape[1]; j++)
 		{
 			data[i * shape[1] + j] = ((i + j) % 127);
-			//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
+			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
 		}
 	}
 	
 	//for(auto kv : shape)
 	//{
-	//	cout<<"kv = "<<kv<<endl;
+	//	DLOG(INFO)<<"kv = "<<kv;
 	//}
 	t->setShape(shape);
 	t->setData((void*)data);
@@ -56,14 +56,13 @@ int fillTensor1(Tensor *t, vector<int> shape){
 
 int main(int argc, char *argv[])
 {
-    DLOG(INFO)<<"main test";
-    std::cout << "Boost version: "  //1.58.0
+    //DLOG(INFO)<<"main test";
+    DLOG(INFO) << "Boost version: "  //1.58.0
           << BOOST_VERSION / 100000
           << "."
           << BOOST_VERSION / 100 % 1000
           << "."
-          << BOOST_VERSION % 100
-          << std::endl;
+          << BOOST_VERSION % 100;
     //auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
 	
 	Tensor *mv_tensor1 = (Tensor * )malloc(sizeof(Tensor));
@@ -133,10 +132,10 @@ int main(int argc, char *argv[])
     graph.print();
 	
 	auto out = graph.outNodes();
-	cout <<"GRAPH output node size = "<<out.size()<<endl;
+	DLOG(INFO) <<"GRAPH output node size = "<<out.size();
 
 	auto in = graph.inNodes();
-	cout <<"GRAPH input node size = "<<in.size()<<endl;
+	DLOG(INFO) <<"GRAPH input node size = "<<in.size();
 
 	vector<int> input_shape;
 	vector<vector<int> > shapes;

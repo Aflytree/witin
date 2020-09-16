@@ -71,7 +71,7 @@ namespace graph {
     //    auto vertexprop = get(boost::vertex_name, inter_graph);
     //    for(vertex_iter itr = vrange.first; itr!=vrange.second; ++itr){
     //        NodeDataType vprop = vertexprop[*itr];
-    //        cout <<vprop->getName() <<"["<<*itr <<"]"<< endl;
+    //        DLOG(INFO) <<vprop->getName() <<"["<<*itr <<"]"<< endl;
 
     //        auto tmp = *itr;
     //    }
@@ -90,7 +90,7 @@ namespace graph {
     //        auto s = get(boost::vertex_name, inter_graph, source(*itr, inter_graph));
     //        auto t = get(boost::vertex_name, inter_graph, target(*itr, inter_graph));
     //        // baseOpNodePtr vprop = vertexprop(*itr);
-    //        cout <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
+    //        DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
     //                            t->getName() <<"["<<target(*itr, inter_graph) <<"]"<< endl;
 
 

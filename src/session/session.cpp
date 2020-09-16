@@ -31,11 +31,12 @@ namespace base{
 	int writeToJson(vector<ROUND_CONFIG> rc, string params_path
 										   , string json_path)
 	{
-		cout<<"JSON CPP VERSION:"<<JSONCPP_VERSION_STRING<<endl;
+		DLOG(INFO)<<"JSON CPP VERSION:"<<JSONCPP_VERSION_STRING;
 		Json::Value root;
 		root["params_path"] = params_path;
 		root["round_total"] = (int)rc.size();
 	
+		DLOG(INFO)<<"test point1";
 		for(auto i = 0; i < rc.size() ;i++)
 		{
 			Json::Value round_cfg;
@@ -55,6 +56,7 @@ namespace base{
 			round_cfg["fifo_grp2_en"] = rc[i].rd_control_enable.fifo_grp2_en;
 			round_cfg["round_pause"] =  rc[i].rd_control_enable.round_pause;
 				
+			DLOG(INFO)<<"test point2";
 			Json::Value weight;
 			weight["w_win_column_s"] = rc[i].array_grp_config.w_win_column_s; 
 			weight["w_win_column_e"] = rc[i].array_grp_config.w_win_column_e;
@@ -92,22 +94,30 @@ namespace base{
 			root["roundConfig"].append(Json::Value(round_cfg));
 		}
 
-		cout<<"FastWriter:"<<endl;
+		DLOG(INFO)<<"FastWriter:";
 		Json::FastWriter fw;
 		//Json::StreamWriterBuilder sw;
-		//cout<<fw.write(root)<<endl;
+		//DLOG(INFO)<<fw.write(root);
 
-		cout<<"StyledWriter:"<<endl;
+		DLOG(INFO)<<"StyledWriter:";
 		Json::StyledWriter sw;
 		//Json::StreamWriterBuilder sw;
-		//cout<<sw.write(root)<<endl;
-
+		//DLOG(INFO)<<sw.write(root);
+		DLOG(INFO)<<"json path:"<<json_path;
 		//write to file
 		ofstream os;
+		//ofstream OpenFile(json_path);
+		//if(OpenFile.fail()){
+		//	DLOG(INFO)<<"open file error";
+		//	exit(0);
+		//}
 		os.open(json_path);
+		if(!os){
+			DLOG(INFO)<<"could not open json_path";
+		}
 		os << sw.write(root);
 		os.close();
-		//cout<<root.toStyledString()<<endl;
+		//DLOG(INFO)<<root.toStyledString();
 		return 0;	
 	}
 	
@@ -167,11 +177,11 @@ namespace base{
 		FILE*stream = fopen("./params.dat", "w");
 		int file_offset = 0;
 
-		std::cout<<"*******************Session build******************* "<<std::endl;
+		DLOG(INFO)<<"*******************Session build******************* ";
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
 		Core core;
-		std::cout<<"in_nodes.size(): "<<in_nodes.size()<<std::endl;
+		DLOG(INFO)<<"in_nodes.size(): "<<in_nodes.size();
 		vector<baseOpNodePtr> op_list = InGraph.graph_topological_sort();
 		
 		int roundTotal = (int)op_list.size(); 
@@ -185,14 +195,14 @@ namespace base{
 		 * create all the tensors
 		 *
 		 */
-		cout<<"==================================="<<endl;
-		cout<<"Create input and output tensors ..."<<endl;
+		DLOG(INFO)<<"===================================";
+		DLOG(INFO)<<"Create input and output tensors ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
 			//tensor	
 			if(isInputNode(op_list[i], in_nodes))
 			{
-				cout<<"This is input node:"<<endl;
+				DLOG(INFO)<<"This is input node:";
 				baseOpNodePtr node = op_list[i];
 				vector<int> input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
@@ -207,7 +217,7 @@ namespace base{
 				//input_tensor_ptr = &in;
 				input_tensors.push_back(input_tensor_ptr);
 
-				cout<<__FILE__<<":"<<__LINE__<<": tensor_type = "<<input_tensor_ptr->tensor_type<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": tensor_type = "<<input_tensor_ptr->tensor_type;
 				if(node->isUseConstTensor())
 				{
 					Tensor* const_tensor;
@@ -215,7 +225,7 @@ namespace base{
 					input_tensors.push_back(const_tensor);
 				}
 
-				cout<<__FILE__<<":"<<__LINE__<<": input_tensors size = "<<input_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": input_tensors size = "<<input_tensors.size();
 				//set node input tensor
 				node->set_input_tensors(input_tensors);
 
@@ -239,14 +249,14 @@ namespace base{
 				
 				for(auto kk : tmp_tensors)
 				{
-					cout<<__FILE__<<":"<<__LINE__<<": "<<node->getName()<<endl;
-					cout<<__FILE__<<":"<<__LINE__<<": output_tensor"<<endl;
+					DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": "<<node->getName();
+					DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": output_tensor";
 					kk->print();
 				}
 			}
 			else /* normal node */
 			{
-				cout<<"This is normal node"<<endl;
+				DLOG(INFO)<<"This is normal node";
 				vector<Tensor*> input_tensors;
 				baseOpNodePtr node = op_list[i];
 				
@@ -264,10 +274,10 @@ namespace base{
 					vector<Tensor*> previous_output_tensors;
 					innodes[j]->get_output_tensors(previous_output_tensors);
 					
-					cout<<innodes[j]->getName()<<endl;		
+					DLOG(INFO)<<innodes[j]->getName();		
 					for(auto kv : previous_output_tensors)
 					{
-						cout<<__FILE__<<__LINE__<<" : input_tensor"<<endl;
+						DLOG(INFO)<<__FILE__<<__LINE__<<" : input_tensor";
 						kv->print();
 						input_tensors.push_back(kv);
 					}
@@ -280,7 +290,7 @@ namespace base{
 					node->getConstTensor(&const_tensor);
 					input_tensors.push_back(const_tensor);
 				}
-				cout<<__FILE__<<__LINE__<<"input_tensors.size : "<<input_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<__LINE__<<"input_tensors.size : "<<input_tensors.size();
 				//set node input tensor
 				node->set_input_tensors(input_tensors);
 				
@@ -291,7 +301,7 @@ namespace base{
 				//Tensor out(out_shape, PLACEHOLDER_TYPE);
 				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
 				output_tensors.push_back(output_tensor_ptr);
-				cout<<__FILE__<<__LINE__<<"out_tensors.size : "<<output_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<__LINE__<<"out_tensors.size : "<<output_tensors.size();
 				//set node output tensor
 				node->set_output_tensors(output_tensors);
 			}
@@ -300,13 +310,13 @@ namespace base{
 		//const Tensor: array 
 		//input / output : regfile 
 		
-		cout<<"===============================alloc==============================="<<endl;
-		cout<<"Generate config for every round ..."<<endl;
+		DLOG(INFO)<<"===============================alloc===============================";
+		DLOG(INFO)<<"Generate config for every round ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
 			if(isInputNode(op_list[i], in_nodes))
 			{
-				cout<<"input node:"<<endl;					
+				DLOG(INFO)<<"input node:";					
 				ROUND_CONFIG round_cfg_in;
 				RD_CONTROL_ENABLE rce;
 				rce.cnt = i;
@@ -332,7 +342,7 @@ namespace base{
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
 				
-				cout<<__FILE__<<":"<<__LINE__<<": INPUTNODE input_tensors size = "<<input_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": INPUTNODE input_tensors size = "<<input_tensors.size();
 				for(int j = 0; j < input_tensors.size();j++)
 				{
 					if(input_tensors[j]->tensor_type == PLACEHOLDER_TYPE)
@@ -342,8 +352,8 @@ namespace base{
 						if(availeMem > 0)
 						{
 							int start_alloc_addr = regFileMem.getGeneralUsedSize();
-							cout<<__FILE__<<": "<<__LINE__<<": start_alloc_addr "<<start_alloc_addr<<endl;
-							cout<<__FILE__<<": "<<__LINE__<<": availeMem "<<availeMem<<endl;
+							DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": start_alloc_addr "<<start_alloc_addr;
+							DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": availeMem "<<availeMem;
 							
 							if(availeMem > input_shape[0])
 							{
@@ -436,7 +446,7 @@ namespace base{
 						//TODO:print those data to params.dat
 						//need manager file params.dat
 
-						cout<<__FILE__<<": "<<__LINE__<<": print weight to params.dat "<<endl;
+						DLOG(INFO)<<__FILE__<<": "<<__LINE__<<": print weight to params.dat ";
 						//input_tensors[j]->print();
 						
 						for(int fp = 0; fp < row_size ;fp++)
@@ -444,7 +454,7 @@ namespace base{
 							for(int fm = 0; fm < column_size ;fm++)
 							{
 								char fdata = ((char*)input_tensors[j]->getData())[fm + fp * column_size];
-								//cout<<" data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata<<endl;
+								//DLOG(INFO)<<" data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata;
 
 								fprintf(stream, "%c", fdata);
 							}
@@ -468,7 +478,7 @@ namespace base{
 				vector<Tensor*> output_tensors;
 				node->get_output_tensors(output_tensors);
 				
-				cout<<__FILE__<<":"<<__LINE__<<": INPUTNODE out_tensors size = "<<output_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": INPUTNODE out_tensors size = "<<output_tensors.size();
 				for(int k = 0; k < output_tensors.size();k++)
 				{
 					if(output_tensors[k]->tensor_type == PLACEHOLDER_TYPE)
@@ -523,7 +533,7 @@ namespace base{
 			//	vector<int> input_shape = node->getInputShape();
 			//	if(input_shape.size() == 0)
 			//	{
-			//		cout<<"input_shape size is zero"<<endl;
+			//		DLOG(INFO)<<"input_shape size is zero";
 			//		exit(1);
 			//	}
 
@@ -531,7 +541,7 @@ namespace base{
 			//	//2.getConst alloc mem for const and print to file 
 			//	//3.allocate output tensor memory
 			//	rounds.push_back(round_cfg_out);	
-			//	cout<<"out node:"<<endl;
+			//	DLOG(INFO)<<"out node:";
 			//}
 			else  /*normal node*/
 			{
@@ -562,7 +572,7 @@ namespace base{
 				//tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 				//											(input_tensors[j], mr));	
 				
-				cout<<__FILE__<<":"<<__LINE__<<": NORM input_tensors size = "<<input_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": NORM input_tensors size = "<<input_tensors.size();
 				for(size_t n = 0; n < input_tensors.size();n++ )
 				{
 				
@@ -572,7 +582,7 @@ namespace base{
 					//if found then update input addr of this round : regfile mem
 					if(iter != tensor_mem_record_map.end())
 					{
-						cout<<"find tensor in tensor_mem_record_map"<<endl;
+						DLOG(INFO)<<"find tensor in tensor_mem_record_map";
 						
 						struct mem_record mr = iter->second;
 						arry_grp_cfg.regfile_addr_start = mr.start;
@@ -580,7 +590,7 @@ namespace base{
 					}
 					else
 					{
-						cout<<"could not find tensor in tensor_mem_record_map, maybe const tensor"<<endl;
+						DLOG(INFO)<<"could not find tensor in tensor_mem_record_map, maybe const tensor";
 					}
 
 					//  allocate mem for const Tensor if not none, : array mem 
@@ -650,7 +660,7 @@ namespace base{
 							}
 						}
 						
-						//cout<<__FILE__<<":"<<__LINE__<<": debug point "<<endl;
+						//DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": debug point ";
 						//fix point in current example
 						//row 
 						weight_params.start = file_offset;
@@ -668,7 +678,7 @@ namespace base{
 				vector<Tensor*> norm_output_tensors;
 				node->get_output_tensors(norm_output_tensors);
 			
-				cout<<__FILE__<<":"<<__LINE__<<": NORM output_tensors size = "<<norm_output_tensors.size()<<endl;
+				DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": NORM output_tensors size = "<<norm_output_tensors.size();
 				for(int m = 0; m < norm_output_tensors.size();m++)
 				{
 					if(norm_output_tensors[m]->tensor_type == PLACEHOLDER_TYPE)
@@ -710,7 +720,7 @@ namespace base{
 	
 				if(isOutputNode(op_list[i], out_nodes))
 				{
-					cout<<"This is output node !!"<<endl;	
+					DLOG(INFO)<<"This is output node !!";	
 				}
 								
 				dump_rd_ctrl_enable(rce);
@@ -724,8 +734,8 @@ namespace base{
 		}	
 		
 		fclose(stream); 
-		writeToJson(rounds, data, "BoardConfig.json");
-
+		writeToJson(rounds, data, "./BoardConfig1.json");
+		DLOG(INFO)<<"Generate BoardConfig end";
 	}	
 	
 	int32_t Session::run(WitinGraphType &InGraph, std::vector<Tensor*> inputs)

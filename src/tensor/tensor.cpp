@@ -29,11 +29,18 @@ namespace base{
     //}
     
 	void Tensor::setShape(std::vector<int> s) {
-		
+		//why???	
+		shape.resize(0);
+		DLOG(INFO)<<"tensor shape size:"<<shape.size();
+		for(auto kv : shape)
+		{
+			DLOG(INFO)<<"1tensor shape:"<<kv;
+		}
 		for(auto kv : s)
 		{
 			shape.push_back(kv);
 		}
+		DLOG(INFO)<<"tensor shape size:"<<shape.size();
     }
     
 	std::vector<int> Tensor::getShape() const {
@@ -45,7 +52,15 @@ namespace base{
 		for(auto sp : shape){
 			size *= sp;
 		}
-		__data = (char*)malloc(size);
+		DLOG(INFO)<<"size:"<<size;
+		
+		__data = (char*)malloc(size * sizeof(char));
+		//int a = 0;	
+		//memcpy(__data, &a, size);
+		if(__data == NULL){
+			DLOG(INFO)<<"tensor setData malloc error : return NULL ";
+		}
+		
 		memcpy(__data, data_in, size);
 	}
 	
@@ -65,26 +80,26 @@ namespace base{
 	void Tensor::print() const
 	{
 		std::vector<int> vt = shape;
-		cout<<"=========================="<<endl;
-		cout<<"Tensor shape is:"<<endl;
+		DLOG(INFO)<<"==========================";
+		DLOG(INFO)<<"Tensor shape is:";
 		for(auto sp : getShape()){
-			cout<<sp<<" ";
+			DLOG(INFO)<<sp<<" ";
 		}
-		cout<<endl;
-		cout<<"Tensor type:"<<tensor_type<<endl;	
+		DLOG(INFO);
+		DLOG(INFO)<<"Tensor type:"<<tensor_type;	
 		if(tensor_type == CONST_TYPE)
 		{
-			cout<<"Data is:"<<endl;
+			DLOG(INFO)<<"Data is:";
 			int size = 0;
 			getSize(size);
 			for(int i = 0;i < size; i++){
-				cout<<(int)((char*)__data)[i]<<" ";
+				DLOG(INFO)<<(int)((char*)__data)[i]<<" ";
 				if(i % 10 == 0 && i != 0)
-					cout<<endl;
+					DLOG(INFO);
 			}
 		}
-		cout<<endl;
-		cout<<"=========================="<<endl;
+		DLOG(INFO);
+		DLOG(INFO)<<"==========================";
 	}
 
 	int fillTensor(Tensor &t, vector<int> shape, void * value
@@ -96,7 +111,7 @@ namespace base{
 		{
 			size *= shape[i];
 		}
-		cout<<"size1 = "<<size<<endl;
+		DLOG(INFO)<<"size1 = "<<size;
 		data = (char*)malloc(size);
 		
 		if(random)
@@ -106,8 +121,8 @@ namespace base{
 				for(int j = 0; j < shape[1]; j++)
 				{
 					data[i * shape[1] + j] = (char)(i + j);
-					//cout<<"data:"<<(int)(char)(i+j)<<endl;
-					//cout<<"data:"<<(int)data[i*shape[1] + j]<<endl;
+					//DLOG(INFO)<<"data:"<<(int)(char)(i+j);
+					//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
 				}
 			}
 		}
