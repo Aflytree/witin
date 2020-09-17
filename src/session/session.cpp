@@ -37,6 +37,19 @@ namespace base{
 		root["round_total"] = (int)rc.size();
 	
 		DLOG(INFO)<<"test point1";
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
+		DLOG(INFO)<<"round total:"<<rc.size();
 		for(auto i = 0; i < rc.size() ;i++)
 		{
 			Json::Value round_cfg;
@@ -71,16 +84,23 @@ namespace base{
 			weight["reg_out_e"] = rc[i].array_grp_config.store_addr + 
 										rc[i].array_grp_config.store_len;
 			
+			DLOG(INFO)<<"test point3";
 			Json::Value weight_params;
+			DLOG(INFO)<<"test point31";
 			weight_params["start"] = rc[i].array_grp_config.w_prams.start;
+			DLOG(INFO)<<"test point32";
 			weight_params["end"] = rc[i].array_grp_config.w_prams.end;
+			DLOG(INFO)<<"test point33";
 			weight_params["size"] = rc[i].array_grp_config.w_prams.size;
+			DLOG(INFO)<<"test point34";
 			weight["weight_params"] = Json::Value(weight_params);
 			
+			DLOG(INFO)<<"test point4";
 			Json::Value actv;
 			actv["type"] = rc[i].actv_grp_config.actv_type;
 			actv["limit"] = rc[i].actv_grp_config.limit;
 			
+			DLOG(INFO)<<"test point5";
 			if(rc[i].rd_control_enable.weight_en)
 			{
 				round_cfg["weight"] = Json::Value(weight);
@@ -91,6 +111,7 @@ namespace base{
 				round_cfg["actv"] = Json::Value(actv);
 			}
 
+			DLOG(INFO)<<"test point6";
 			root["roundConfig"].append(Json::Value(round_cfg));
 		}
 
@@ -448,23 +469,24 @@ namespace base{
 
 						DLOG(INFO)<<": print weight to params.dat ";
 						//input_tensors[j]->print();
+						DLOG(INFO)<<"	row_size:"<<row_size;
+						DLOG(INFO)<<"	column_size:"<<column_size;
 						
 						for(int fp = 0; fp < row_size ;fp++)
 						{
 							for(int fm = 0; fm < column_size ;fm++)
 							{
-								char fdata = ((char*)input_tensors[j]->getData())[fm + fp * column_size];
+								char fdata = (char)((char*)input_tensors[j]->getData())[fm + fp * column_size];
 								//DLOG(INFO)<<" data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata;
-
-								fprintf(stream, "%c", fdata);
+								fwrite(&fdata, sizeof(char), 1, stream);
+								//fprintf(stream, "%c", fdata);
 							}
 						}
-
 						
 						//fix point in current example
 						//row 
 						weight_params.start = file_offset;
-						weight_params.end = file_offset + column_size * row_size;
+						weight_params.end = file_offset + column_size * row_size - 1;
 						weight_params.size = column_size * row_size;
 						
 						//file ptr ahead column_size * row_size
@@ -656,7 +678,9 @@ namespace base{
 							for(int fm = 0; fm < column_size; fm++)
 							{
 								char fdata = ((char*)input_tensors[n]->getData())[fm + fp * column_size];
-								fprintf(stream, "%c", fdata);
+								//DLOG(INFO)<<" norm data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata;
+								fwrite(&fdata, sizeof(char), 1, stream);
+								//fprintf(stream, "%d", fdata);
 							}
 						}
 						
@@ -664,7 +688,7 @@ namespace base{
 						//fix point in current example
 						//row 
 						weight_params.start = file_offset;
-						weight_params.end = file_offset + column_size * row_size;
+						weight_params.end = file_offset + column_size * row_size - 1;
 						weight_params.size = column_size * row_size;
 
 						//file ptr ahead column_size * row_size

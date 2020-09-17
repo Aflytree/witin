@@ -53,6 +53,11 @@ class Tensor{
 		//default
 		Tensor();
 		
+		~Tensor()
+		{
+			free(__data);
+		};		
+		
 		Tensor(vector<int> shape = {}, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE, 
 								  int data_type = INT8_TYPE)
 		{
@@ -76,17 +81,17 @@ class Tensor{
     	int setData(void * data_in);
 		
 		
-		int setConsumers(vector<OpNode> ops){}
+		int setConsumers(vector<OpNode> ops){ return 0;}
 	
-		int getConsumers(vector<OpNode> &ops){}
+		int getConsumers(vector<OpNode> &ops){ return 0;}
 		int getConsumersNum()
 		{
 			return 0;
 			//return (int)consumers.size();
 		}
 
-		int setProducer(OpNode *op){}
-		int getProducer(OpNode *op){}
+		int setProducer(OpNode *op){return 0;}
+		int getProducer(OpNode *op){return 0;}
 
 		int getDataType(){ return data_type; }
         operation* op;

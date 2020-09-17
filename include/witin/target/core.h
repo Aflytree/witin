@@ -229,9 +229,9 @@ typedef struct roundControlS{
 		mult_en = false;
 		readdr_en = false;
 		TDNN_en = false;
-		fifo_grp0_en = false;
-		fifo_grp1_en = false;
-		fifo_grp2_en = false;
+		fifo_grp0_en = true;
+		fifo_grp1_en = true;
+		fifo_grp2_en = true;
 		round_pause = false;
 	}
 }RD_CONTROL_ENABLE;

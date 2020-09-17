@@ -79,10 +79,16 @@ class OpNode : public node{
 			return 0;
 		}
 
-		virtual vector<int> infer_shape(){}
-		virtual vector<int> getInputShape(){}
-		virtual bool isUseConstTensor(){}
-		virtual int getConstTensor(Tensor **t){}
+		virtual vector<int> infer_shape(){
+			vector <int> ret;
+			return ret;
+		}
+		virtual vector<int> getInputShape(){
+			vector <int> ret;
+			return ret;
+		}
+		virtual bool isUseConstTensor(){return false;}
+		virtual int getConstTensor(Tensor **t){return 0;}
 		
 		vector<Tensor*> input_tensors;
 		vector<Tensor*> output_tensors;

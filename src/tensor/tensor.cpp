@@ -30,6 +30,7 @@ namespace base{
     
 	void Tensor::setShape(std::vector<int> s) {
 		//why???	
+		DLOG(INFO)<<"tensor shape old size:"<<shape.size();
 		shape.resize(0);
 		DLOG(INFO)<<"tensor shape size:"<<shape.size();
 		for(auto kv : shape)
