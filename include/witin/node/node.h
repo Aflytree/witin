@@ -27,6 +27,11 @@ struct ir_op{
 
 class Tensor;
 
+class ATTRS{
+
+	public:
+
+};
 
 class OpNode : public node{
     public:
@@ -37,11 +42,18 @@ class OpNode : public node{
             this->id = id;
             this->name = name;
         }
-		std::string getName(){
+
+		string getName()
+		{
             return name;
         }
 
-		int set_opnode_input_tensor(class OpNode *op, int input_idx, 
+		int getID()
+		{
+			return id;
+		}
+
+		int set_opnode_input_tensor(class OpNode *op, int input_idx,
 														Tensor* tensor);
 		int set_input_tensors(vector<Tensor*> ts)
 		{
@@ -70,7 +82,7 @@ class OpNode : public node{
 			}
 			return 0;
 		}
-		
+
 		int get_input_tensors(vector<Tensor*> &ts)
 		{
 			//DLOG(INFO)<<"OpNode get input tensors, size = "<<input_tensors.size();
@@ -79,19 +91,24 @@ class OpNode : public node{
 			return 0;
 		}
 
-		virtual vector<int> infer_shape(){
+		virtual vector<int> infer_shape()
+		{
 			vector <int> ret;
 			return ret;
 		}
-		virtual vector<int> getInputShape(){
+
+		virtual vector<int> getInputShape()
+		{
 			vector <int> ret;
 			return ret;
 		}
+
 		virtual bool isUseConstTensor(){return false;}
 		virtual int getConstTensor(Tensor **t){return 0;}
-		
+
 		vector<Tensor*> input_tensors;
 		vector<Tensor*> output_tensors;
+
 	private:
         int id;
 		std::string name;
@@ -102,12 +119,12 @@ class OpNode : public node{
 //{
 //	//if(tensor->getConsumersNum() >= MAX_CONSUMERS_SIZE)
 //	//{
-//	//	DLOG(INFO)<<"error in set opnode input tensor"<<;	
+//	//	DLOG(INFO)<<"error in set opnode input tensor"<<;
 //	//	return -1;
 //	//}
-//	
+//
 //	op->input_tensors[input_idx] = tensor;
-//	
+//
 //}
 
 } // namespace node
