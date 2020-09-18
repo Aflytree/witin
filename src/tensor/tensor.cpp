@@ -9,10 +9,11 @@
 #include <witin/tensor/tensor.h>
 #include <witin/global.h>
 
+#include <sstream>
+
 namespace witin{
 namespace base{
 
-    //Tensor::Tensor(void* ptr){
     Tensor::Tensor(){
     }
     
@@ -31,16 +32,15 @@ namespace base{
 	void Tensor::setShape(std::vector<int> s) {
 		//why???	
 		DLOG(INFO)<<"tensor shape old size:"<<shape.size();
-		shape.resize(0);
+		shape.resize(2);
 		DLOG(INFO)<<"tensor shape size:"<<shape.size();
-		for(auto kv : shape)
-		{
-			DLOG(INFO)<<"1tensor shape:"<<kv;
+		for(auto kv : shape){
+			DLOG(INFO)<<"    old shape:"<<kv;
 		}
-		for(auto kv : s)
-		{
-			shape.push_back(kv);
-		}
+		//for(auto kv : s)
+		//{
+		//	shape.push_back(kv);
+		//}
 		DLOG(INFO)<<"tensor shape size:"<<shape.size();
     }
     
@@ -86,20 +86,21 @@ namespace base{
 		for(auto sp : getShape()){
 			DLOG(INFO)<<sp<<" ";
 		}
-		DLOG(INFO);
 		DLOG(INFO)<<"Tensor type:"<<tensor_type;	
+		stringstream ss; 
 		if(tensor_type == CONST_TYPE)
 		{
 			DLOG(INFO)<<"Data is:";
 			int size = 0;
 			getSize(size);
 			for(int i = 0;i < size; i++){
-				DLOG(INFO)<<(int)((char*)__data)[i]<<" ";
-				if(i % 10 == 0 && i != 0)
-					DLOG(INFO);
+				if(i < 100)
+					ss<<(int)((char*)__data)[i]<<" ";
+				//if(i % 10 == 0 && i != 0)
+				//	ss<<"\n";
 			}
 		}
-		DLOG(INFO);
+		DLOG(INFO)<<ss.str();
 		DLOG(INFO)<<"==========================";
 	}
 

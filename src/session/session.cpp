@@ -36,19 +36,6 @@ namespace base{
 		root["params_path"] = params_path;
 		root["round_total"] = (int)rc.size();
 	
-		DLOG(INFO)<<"test point1";
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
-		DLOG(INFO)<<"round total:"<<rc.size();
 		DLOG(INFO)<<"round total:"<<rc.size();
 		for(auto i = 0; i < rc.size() ;i++)
 		{
@@ -69,7 +56,6 @@ namespace base{
 			round_cfg["fifo_grp2_en"] = rc[i].rd_control_enable.fifo_grp2_en;
 			round_cfg["round_pause"] =  rc[i].rd_control_enable.round_pause;
 				
-			DLOG(INFO)<<"test point2";
 			Json::Value weight;
 			weight["w_win_column_s"] = rc[i].array_grp_config.w_win_column_s; 
 			weight["w_win_column_e"] = rc[i].array_grp_config.w_win_column_e;
@@ -84,23 +70,16 @@ namespace base{
 			weight["reg_out_e"] = rc[i].array_grp_config.store_addr + 
 										rc[i].array_grp_config.store_len;
 			
-			DLOG(INFO)<<"test point3";
 			Json::Value weight_params;
-			DLOG(INFO)<<"test point31";
 			weight_params["start"] = rc[i].array_grp_config.w_prams.start;
-			DLOG(INFO)<<"test point32";
 			weight_params["end"] = rc[i].array_grp_config.w_prams.end;
-			DLOG(INFO)<<"test point33";
 			weight_params["size"] = rc[i].array_grp_config.w_prams.size;
-			DLOG(INFO)<<"test point34";
 			weight["weight_params"] = Json::Value(weight_params);
 			
-			DLOG(INFO)<<"test point4";
 			Json::Value actv;
 			actv["type"] = rc[i].actv_grp_config.actv_type;
 			actv["limit"] = rc[i].actv_grp_config.limit;
 			
-			DLOG(INFO)<<"test point5";
 			if(rc[i].rd_control_enable.weight_en)
 			{
 				round_cfg["weight"] = Json::Value(weight);
@@ -111,7 +90,6 @@ namespace base{
 				round_cfg["actv"] = Json::Value(actv);
 			}
 
-			DLOG(INFO)<<"test point6";
 			root["roundConfig"].append(Json::Value(round_cfg));
 		}
 
@@ -464,11 +442,8 @@ namespace base{
 						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
 						arry_grp_cfg.w_win_row_len = row_size;
 
-						//TODO:print those data to params.dat
-						//need manager file params.dat
-
+						//manager file params.dat
 						DLOG(INFO)<<": print weight to params.dat ";
-						//input_tensors[j]->print();
 						DLOG(INFO)<<"	row_size:"<<row_size;
 						DLOG(INFO)<<"	column_size:"<<column_size;
 						
@@ -478,13 +453,11 @@ namespace base{
 							{
 								char fdata = (char)((char*)input_tensors[j]->getData())[fm + fp * column_size];
 								//DLOG(INFO)<<" data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata;
-								fwrite(&fdata, sizeof(char), 1, stream);
-								//fprintf(stream, "%c", fdata);
+								//fwrite(&fdata, sizeof(char), 1, stream);
+								fprintf(stream, "%c", fdata);
 							}
 						}
 						
-						//fix point in current example
-						//row 
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;
 						weight_params.size = column_size * row_size;
@@ -670,22 +643,17 @@ namespace base{
 						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
 						arry_grp_cfg.w_win_row_len = row_size;
 
-						//TODO:print those data to params.dat
-						//need manager file params.dat
-						
+						//manager file params.dat
 						for(int fp = 0; fp < row_size ;fp++)
 						{
 							for(int fm = 0; fm < column_size; fm++)
 							{
 								char fdata = ((char*)input_tensors[n]->getData())[fm + fp * column_size];
 								//DLOG(INFO)<<" norm data : "<<fm+fp*column_size<<" f:"<<fdata<<"fend  int:"<<(int)fdata;
-								fwrite(&fdata, sizeof(char), 1, stream);
-								//fprintf(stream, "%d", fdata);
+								//fwrite(&fdata, sizeof(char), 1, stream);
+								fprintf(stream, "%c", fdata);
 							}
 						}
-						
-						//DLOG(INFO)<<__FILE__<<":"<<__LINE__<<": debug point ";
-						//fix point in current example
 						//row 
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;

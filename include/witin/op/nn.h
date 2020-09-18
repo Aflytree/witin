@@ -18,15 +18,21 @@ namespace base{
 class mvOpNode : public OpNode{
     public:
 		mvOpNode(){}
-		virtual ~mvOpNode(){}
+		virtual ~mvOpNode(){
+			delete const_tensor; 
+		}
         mvOpNode(vector<int> shape,
-				 Tensor *const_tensor, 
+				 Tensor *c_tensor, 
 				 int id = MV_OPNODE_ID, 
 				 const std::string name = "")
         : OpNode{id, name}
         {
 			this->input1_shape = shape;
-			this->const_tensor = const_tensor;
+			const_tensor = new Tensor(c_tensor->getShape(), CONST_TYPE);
+			fillTensorPtr(this->const_tensor, 
+					c_tensor->getShape(), 
+					c_tensor->getData());
+			//this->const_tensor = c_tensor;
             this->id = id;
             this->name = name;
         }

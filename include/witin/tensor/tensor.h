@@ -102,9 +102,9 @@ class Tensor{
 		int fillTensor(Tensor &t, vector<int> shape, void *data,
 						bool random);
 
+		std::vector<int> shape{0};
     private:
 		//Tensor shape 
-		std::vector<int> shape;
 		//data type  0:int8,  1:float16
 		int data_type;
 		//the operation produce this Tensor
@@ -117,6 +117,35 @@ class Tensor{
 		struct mem_record * mr; 
 		void* __data;
 };
+
+inline int fillTensorPtr(Tensor *t, vector<int> shape, void * value)
+{
+	char * data;
+	int size = 1;
+	for(size_t i = 0; i < shape.size();i++)
+	{
+		size *= shape[i];
+	}
+	DLOG(INFO)<<"size1 = "<<size;
+	data = (char*)malloc(size);
+	
+	for(int i = 0; i < shape[0]; i++)
+	{
+		for(int j = 0; j < shape[1]; j++)
+		{
+			data[i * shape[1] + j] = ((char*)value)[i + j];
+			//DLOG(INFO)<<"data:"<<(int)(char)(i+j);
+			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
+		}
+	}
+	t->setData((void*)data);
+	free(data);
+	return 0;
+}
+
+
+
+
 
 }// namespace base
 }// namespace witin
