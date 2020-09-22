@@ -2,7 +2,7 @@
 	> File Name: mem.h
 	> Description: used for core mem manager
 	> Author: afly
-	> Mail: aifei.zhang@witintech.com 
+	> Mail: aifei.zhang@witintech.com
 	> Created Time: Wed Aug 26 19:39:57 2020
  ************************************************************************/
 #pragma once
@@ -25,13 +25,13 @@ namespace base{
 #define ARRAY_COLUMN_SIZE   1*1024
 
 //DAC_FIFO
-#define DAC_FIFO_SIZE		1*1024 
+#define DAC_FIFO_SIZE		1*1024
 
 //REGFILE
 #define REGFILE_MEM_SIZE	4*1024
 #define REGFILE_MODE		0  //not TDNN
-#define REGFILE_1K_SIZE		1*1024 
-#define REGFILE_3K_SIZE		3*1024 
+#define REGFILE_1K_SIZE		1*1024
+#define REGFILE_3K_SIZE		3*1024
 
 
 enum MEM_TYPE{
@@ -44,7 +44,7 @@ enum MEM_TYPE{
 
 struct mem_record{
 	class Tensor * tensor;
-	//int used; 
+	//int used;
 	//regfile mem
 	int start;
 	int len;
@@ -80,7 +80,7 @@ class Mem{
 class RegFileMem : public Mem{
 	public:
 		RegFileMem(){}
-	
+
 		int getTotalSize();
 		int getDACFifoSize();
 		int getGenealSize();
@@ -100,27 +100,33 @@ class RegFileMem : public Mem{
 			generalUsedSize+=size;
 			return 0;
 		}
-		
+
+		int setGeneralUsedSize(int value)
+		{
+			generalUsedSize = value;
+			return 0;
+		}
+
 		int freeMemAddr(int addr, int size);
 		int check_addr(int addr);
 		int getGeneralUsedSize()
 		{
-			return generalUsedSize;	
+			return generalUsedSize;
 		}
 
 		int getAvailableMem()
 		{
-			return REGFILE_MEM_SIZE - getGeneralUsedSize(); 
+			return REGFILE_MEM_SIZE - getGeneralUsedSize();
 		}
-		
+
 		//whether split into 1 and 3
 		//defalut to 0, not split
 		int Mode = 0;
-		
+
 		int regfileSize = REGFILE_MEM_SIZE;
-		//is intended for dac 
+		//is intended for dac
 		int dacFifoSize = REGFILE_1K_SIZE;
-		//4 - 1 
+		//4 - 1
 		int generalSize = REGFILE_3K_SIZE;
 		int usedSize = 0;
 		int dacFifoUsedSize = 0;
@@ -135,7 +141,7 @@ class BiasRegionMem : public Mem{
 		BiasRegionMem(){}
 
 		int useBiadMemFlag = 0;
-		
+
 		//alloc
 		int allocBiasRegionMem(int &addr, int size);
 		//free
@@ -143,7 +149,7 @@ class BiasRegionMem : public Mem{
 
 	private:
 		int biasRegionSize = BIAS_MEM_SIZE;
-		
+
 		//mem manager
 		int biasRegionUsedSize = 0;
 		int biasRegionUsedStart = 0;
@@ -158,7 +164,7 @@ class BiasRegionMem : public Mem{
 class CaculateArryMem : public Mem{
 	public:
 		CaculateArryMem(){}
-		
+
 		//used mem init
 		int init(){}
 
@@ -171,17 +177,17 @@ class CaculateArryMem : public Mem{
 		{
 			return 	ARRAY_COLUMN_SIZE - arrayColumnUsedSize;
 		}
-		
+
 		int getArryColumnUsedSize()
 		{
-			return arrayColumnUsedSize;	
+			return arrayColumnUsedSize;
 		}
-		
+
 		int getArryRowUsedSize()
 		{
-			return arrayRowUsedSize;	
+			return arrayRowUsedSize;
 		}
-		
+
 		//alloc Mem
 		int allocRowMem(int rowAddr, int size)
 		{
@@ -199,7 +205,7 @@ class CaculateArryMem : public Mem{
 			arrayRowUsedSize+=size;
 			return 0;
 		}
-		
+
 		int allocColumnMem(int columnAddr, int size)
 		{
 			DLOG(INFO)<<" :ARRAY columnAddr "<<columnAddr<<" size "<<size;
@@ -215,19 +221,31 @@ class CaculateArryMem : public Mem{
 
 			arrayColumnUsedSize+=size;
 			return 0;
-		
+
 		}
-			
+
+		int setArrayColumnUsedSize(int value)
+		{
+			arrayColumnUsedSize = value;
+			return 0;
+		}
+
+		int setArrayRowUsedSize(int value)
+		{
+			arrayRowUsedSize = value;
+			return 0;
+		}
+
 		//array size
 		int arraySize = ARRAY_MEM_SIZE;
 		int arrayRowSize = ARRAY_ROW_SIZE;
 		int arrayColumnSize = ARRAY_COLUMN_SIZE;
-		
+
 		//remained size
 		int arrayrowRemainSize = ARRAY_ROW_SIZE;
 		int arrayColumnRemainSize = ARRAY_COLUMN_SIZE;
 		int arrayTotalRemainSize = ARRAY_MEM_SIZE;
-		
+
 		//row manager
 		int arrayRowUsedSize = 0;
 		int arrayRowUsedStart = 0;
@@ -237,7 +255,7 @@ class CaculateArryMem : public Mem{
 		int arrayColumnUsedSize = 0;
 		int arrayColumnUsedStart = 0;
 		int arrayColumnUsedEnd = 0;
-	
+
 		//total manager
 		int arrayTotalUsedSize = 0;
 };
@@ -247,19 +265,19 @@ class CaculateArryMem : public Mem{
 class DACFifoMem : public Mem{
 	public:
 		DACFifoMem(){}
-		
-		//get available mem		
+
+		//get available mem
 		int getRowAvailableMem();
 		//alloc
 		int allocDACFifoMem(int addr, int size);
 		//free
 		int freeDACFifoMem(int addr, int size);
-		
+
 		int start = 0;
 		int end = 0;
 	private:
 		int dacFifoSize = DAC_FIFO_SIZE;
-		
+
 		//used mem manager
 		int dacFifoUsedSize = 0;
 		int dacFifoUsedStart = 0;

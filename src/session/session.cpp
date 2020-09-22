@@ -5,6 +5,7 @@
 	> Created Time: Wed Aug 26 19:31:55 2020
  ************************************************************************/
 #include <fstream>
+#include <ctime>
 #include <witin/session/session.h>
 #include <witin/graph/graph.h>
 #include <witin/global.h>
@@ -165,11 +166,35 @@ namespace base{
 				return true;
 		}
 	}
+	/*init mem from a file*/
+	int init_mem(void)
+	{
+		int generalUsedSize = 0;
+		int arrayColumnUsedSize = 0;
+		int arrayRowUsedSize = 0;
+
+		FILE*data = fopen("./memInitFile.data", "r");
+		if(!data)
+		{
+			LOG(FATAL)<<"Open memInitFile.data error!";
+		}
+
+		fscanf(data, "%d", &generalUsedSize);
+		fscanf(data, "%d", &arrayColumnUsedSize);
+		fscanf(data, "%d", &arrayRowUsedSize);
+
+		regFileMem.setGeneralUsedSize(generalUsedSize);
+		caculateArryMem.setArrayColumnUsedSize(arrayColumnUsedSize);
+		caculateArryMem.setArrayRowUsedSize(arrayRowUsedSize);
+
+		fclose(data);
+		return 0;
+	}
 
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
 	{
 		Json::Value root;
-		string data = "./params.dat";
+		string params_path = "./params.dat";
 		FILE*stream = fopen("./params.dat", "w");
 		int file_offset = 0;
 
@@ -186,7 +211,7 @@ namespace base{
 		std::vector<ROUND_CONFIG> rounds;
 
 		map<Tensor*, struct mem_record> tensor_mem_record_map;
-
+		init_mem();
 		/*
 		 * create all the tensors
 		 *
@@ -209,8 +234,8 @@ namespace base{
 				}
 
 				//Tensor in(input_shape, PLACEHOLDER_TYPE);
+				//delete input_tensor_ptr in deconstructor of opNode
 				Tensor* input_tensor_ptr = new Tensor(input_shape, PLACEHOLDER_TYPE);
-				//input_tensor_ptr = &in;
 				input_tensors.push_back(input_tensor_ptr);
 
 				DLOG(INFO)<<": tensor_type = "<<input_tensor_ptr->tensor_type;
@@ -231,9 +256,6 @@ namespace base{
 				//Tensor out(out_shape, PLACEHOLDER_TYPE);
 				//Tensor* output_tensor_ptr = (Tensor *)malloc(sizeof(Tensor));
 				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
-				//output_tensor_ptr->setShape(out_shape);
-				//output_tensor_ptr->tensor_type = PLACEHOLDER_TYPE;
-
 
 				vector<Tensor*> output_tensors;
 				output_tensors.push_back(output_tensor_ptr);
@@ -323,8 +345,8 @@ namespace base{
 
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
-
-				if(node->getID() == MV_OPNODE_ID)
+				int node_id = node->getID();
+				if(node_id == MV_OPNODE_ID)
 				{
 					DLOG(INFO)<<"This dense node!!";
 					mvOpNodePtr mv_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
@@ -343,6 +365,19 @@ namespace base{
 					{
 						rce.actv_en = false;
 					}
+				}
+				else if(node_id == POOL_OPNODE_ID){}
+				else if(node_id == TANH_OPNODE_ID){}
+				else if(node_id == SIGMOID_OPNODE_ID){}
+				else if(node_id == RELU_OPNODE_ID){}
+				else if(node_id == LOG_OPNODE_ID){}
+				else if(node_id == ABS_OPNODE_ID){}
+				else if(node_id == MAX_OPNODE_ID){}
+				else if(node_id == MIN_OPNODE_ID){}
+				else if(node_id == INVERT_OPNODE_ID){}
+				else if(node_id == SHIFT_OPNODE_ID){}
+				else{
+					LOG(FATAL)<<"Do not support opnode ID :"<<node_id;
 				}
 
 				//getShape
@@ -458,9 +493,10 @@ namespace base{
 
 						//manager file params.dat
 						DLOG(INFO)<<": print weight to params.dat ";
-						DLOG(INFO)<<"	row_size:"<<row_size;
+						DLOG(INFO)<<"	   row_size:"<<row_size;
 						DLOG(INFO)<<"	column_size:"<<column_size;
-
+						clock_t startTime, endTime;
+						startTime = clock();
 						for(int fp = 0; fp < row_size ;fp++)
 						{
 							for(int fm = 0; fm < column_size ;fm++)
@@ -471,6 +507,8 @@ namespace base{
 								fprintf(stream, "%c", fdata);
 							}
 						}
+						endTime = clock();
+						std::cout<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s"<<std::endl;
 
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;
@@ -674,7 +712,8 @@ namespace base{
 						arry_grp_cfg.w_win_row_s = start_alloc_row_addr;
 						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
 						arry_grp_cfg.w_win_row_len = row_size;
-
+						clock_t startTime, endTime;
+						startTime = clock();
 						//manager file params.dat
 						for(int fp = 0; fp < row_size ;fp++)
 						{
@@ -686,6 +725,9 @@ namespace base{
 								fprintf(stream, "%c", fdata);
 							}
 						}
+						endTime = clock();
+						DLOG(INFO)<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s";
+
 						//row
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;
@@ -758,7 +800,14 @@ namespace base{
 		}
 
 		fclose(stream);
-		writeToJson(rounds, data, "./BoardConfig.json");
+		writeToJson(rounds, params_path, "./BoardConfig.json");
+
+		//write mem useage to a file
+		FILE*memSt;
+		memSt = fopen("./memInitFile.data", "w");
+		fprintf(memSt, "%d\n", regFileMem.getGeneralUsedSize());
+		fprintf(memSt, "%d\n", caculateArryMem.getArryColumnUsedSize());
+		fprintf(memSt, "%d\n", caculateArryMem.getArryRowUsedSize());
 		DLOG(INFO)<<"Generate BoardConfig end";
 	}
 

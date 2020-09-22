@@ -52,14 +52,12 @@ class mvOpNode : public OpNode{
 			this->mv_attrs.act_type = act_type;
         }
 
-		//int get_input_tensors(vector<Tensor*> & ts)
-		//{
-		//	DLOG(INFO)<<"mvOpNode get input tensors";
-		//}
-
+		/*
+		 * infer output shape of the mvOpNode
+		 *
+		 */
 		vector<int> infer_shape()
 		{
-			vector<int>	input1_shape = getInputShape();
 			Tensor *t;
 			getConstTensor(&t);
 
@@ -73,15 +71,18 @@ class mvOpNode : public OpNode{
 
 			out_shape.push_back(input1_shape[0]);
 			out_shape.push_back(input2_shape[1]);
-			//out_shape.assign((int)input1_shape.size() - 1, input2_shape[1]);
+
 			for(auto kv : out_shape)
 			{
-
 				DLOG(INFO)<<"[infer shape] out_shape : "<<kv;
 			}
 			return out_shape;
 		};
 
+		/*
+		 * get input1 shape of the mvOpNode
+		 *
+		 */
 		vector<int> getInputShape(){return input1_shape;}
 
 		bool isUseConstTensor(){return true;}
