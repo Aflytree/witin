@@ -4,7 +4,6 @@ set(CMAKE_C_COMPILER "/usr/bin/gcc")
 set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 project (witin_excu)
 
-#include_directories(/usr/include/python3.5m)
 
 file(GLOB SOURCES "src/node/*.cpp"
 	"src/graph/*.cpp"
@@ -12,8 +11,9 @@ file(GLOB SOURCES "src/node/*.cpp"
 	"src/target/*.cpp"
 	"src/session/*.cpp"
 	"src/utils/*.cpp"
-	"src/main.cpp"
 	)
+file(GLOB SOURCES_BRANCH "src/branch.cpp")
+
 file(GLOB DMLC_PATH "3rdparty/dmlc-core/include")
 file(GLOB DLPACK_PATH "3rdparty/dlpack/include")
 file(GLOB INCLUDE_DIR "include/")
@@ -23,6 +23,13 @@ include_directories(${INCLUDE_DIR})
 include_directories(${DMLC_PATH})
 include_directories(${DLPACK_PATH})
 
+macro(witin_add_example name)
+	add_executable(${name} src/${name}.cpp ${SOURCES})
+	target_include_directories(${name} PRIVATE ${INCLUDE_DIR})
+	target_include_directories(${name} PRIVATE ${DMLC_PATH})
+	target_include_directories(${name} PRIVATE ${DLPACK_PATH})
+	target_link_libraries(${name} PRIVATE jsoncpp)
+endmacro()
 
 include(cmake/modules/Findlibdb_cxx.cmake)
 #判断编译器类型,如果是gcc编译器,则在编译选项中加入c++11支持
@@ -39,7 +46,7 @@ aux_source_directory(. DIR_SRCS)
 #为源文件的编译添加选项
 #ADD_DEFINITIONS(-g -W -Wall -o2 )
 ADD_DEFINITIONS(-g)
-link_directories(./lib)
+#link_directories(./lib)
 message(STATUS "add exectable")
 
 add_definitions(-DDMLC_LOG_DEBUG=1)
@@ -58,10 +65,16 @@ if(LIBDB_CXX_FOUND)
     message(STATUS "Found libdb libraries and include")
 endif()
 #得出可执行文件
-add_executable(witin_excu  ${SOURCES})
+#add_executable(witin_excu  ${SOURCES} "src/main.cpp")
+#add_executable(branch_test  ${SOURCES_BRANCH})
 #link libray in static mode
-target_link_libraries(witin_excu jsoncpp)
+#target_link_libraries(witin_excu jsoncpp)
+#target_link_libraries(branch_test jsoncpp)
 
+#target_include_directories(branch_test PRIVATE ${include})
+
+witin_add_example(main)
+witin_add_example(branch)
 
 add_library(witin SHARED ${SOURCES})
 target_link_libraries(witin jsoncpp)

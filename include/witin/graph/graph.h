@@ -29,6 +29,10 @@ namespace base{
 using namespace boost;
 
 struct EdgeProperty{
+	EdgeProperty(int src = 0,
+				 int dst = 0) :
+				 src(src), dst(dst)
+	{}
     int src;
     int dst;
 };
@@ -85,10 +89,10 @@ class witin_graph
     typedef std::pair<edge_iter, edge_iter> edge_range_t;
 
     public:
-		
+
 		/* default constructors etc. */
         witin_graph(){}
-        
+
 		/*deconstructors*/
         virtual ~witin_graph(){}
 
@@ -98,7 +102,7 @@ class witin_graph
             inter_graph.clear();
         }
 
-        /* 
+        /*
 		 * add node to inter_graph and update global local_map_
 		 */
         Vertex addNode(const NodeDataType& node)
@@ -111,8 +115,8 @@ class witin_graph
             local_map_[node] = v;
             return v;
         }
-		
-		/* 
+
+		/*
 		 * add edge to inter_graph
 		 */
         void addEdge(NodeDataType node1, NodeDataType node2,
@@ -127,8 +131,8 @@ class witin_graph
             add_edge(r1->second, r2->second, edge, inter_graph);
 
         }
-		
-		/* 
+
+		/*
 		 * get in degree of a node
 		 */
 		int in_degree_node(NodeDataType node)
@@ -155,8 +159,8 @@ class witin_graph
 			}
 			return idegree;
 		}
-	
-		/* 
+
+		/*
 		 * get in nodes of a node
 		 */
 		std::vector<NodeDataType> innodes_of_node(NodeDataType node)
@@ -164,9 +168,9 @@ class witin_graph
 			std::vector<NodeDataType> node_list;
 			vertex_range_t vrange = vertices(inter_graph);
 			auto vertexprop = get(boost::vertex_name, inter_graph);
-			
+
             edge_range_t erange = edges(inter_graph);
-			
+
 			if(erange.first == erange.second)
 			{
 				DLOG(INFO)<<"Empty Edges In Inter_graph!";
@@ -177,29 +181,29 @@ class witin_graph
                 auto vertexprop = get(boost::edge_weight, inter_graph);
                 auto s = get(boost::vertex_name, inter_graph, source(*itr, inter_graph));
                 auto t = get(boost::vertex_name, inter_graph, target(*itr, inter_graph));
-                
+
 				if(node == t)
 				{
-					node_list.push_back(s);	
+					node_list.push_back(s);
 					DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
 					    t->getName() <<"["<<target(*itr, inter_graph) <<"]";
 				}
-            }  
+            }
 			return node_list;
 		}
-		
-		/* 
+
+		/*
 		 * get out nodes of a node
 		 */
 		std::vector<NodeDataType> outnodes_of_node(NodeDataType node)
 		{
-		
-		
-		
+
+
+
 		}
 
 
-		/* 
+		/*
 		 * get out degree of a node
 		 */
 		int out_degree_node(NodeDataType node)
@@ -215,14 +219,14 @@ class witin_graph
 			}
 			return degree;
 		}
-        
-		/* 
+
+		/*
 		 * get all input nodes of the inter_graph
 		 */
 		std::vector<NodeDataType> inNodes()
 		{
 			std::vector<NodeDataType> nodes;
-			std::vector<NodeDataType > allNodes = getAllNodes();	
+			std::vector<NodeDataType > allNodes = getAllNodes();
 			for(auto node : allNodes)
 			{
 				if(0 == in_degree_node(node))
@@ -232,14 +236,14 @@ class witin_graph
 			}
 			return nodes;
 		}
-        
-		/* 
+
+		/*
 		 * get all output nodes of inter_graph
 		 */
 		std::vector<NodeDataType> outNodes()
 		{
 			std::vector<NodeDataType> nodes;
-			std::vector<NodeDataType> allNodes = getAllNodes();	
+			std::vector<NodeDataType> allNodes = getAllNodes();
 			for(auto node : allNodes)
 			{
 				if(0 == out_degree_node(node))
@@ -249,9 +253,9 @@ class witin_graph
 			}
 			return nodes;
 		}
-        
-		/* 
-		 * print all nodes of inter_graph 
+
+		/*
+		 * print all nodes of inter_graph
 		 */
 		void printAllNodes()
         {
@@ -263,9 +267,9 @@ class witin_graph
                 DLOG(INFO) <<vprop->getName() <<"["<<*itr <<"]";
             }
         };
-    
-		/* 
-		 *  store all nodes of inter_graph into a vector 
+
+		/*
+		 *  store all nodes of inter_graph into a vector
 		 */
         std::vector<NodeDataType> getAllNodes()
         {
@@ -281,15 +285,15 @@ class witin_graph
             }
             return v;
         };
-        
-		/* 
-		 *  store all nodes of inter_graph into a vector 
+
+		/*
+		 *  store all nodes of inter_graph into a vector
 		 */
         void printAllEdges()
         {
             //DLOG(INFO)<<"Dump all edges:";
             edge_range_t erange = edges(inter_graph);
-            
+
 			if(erange.first == erange.second)
 			{
 				DLOG(INFO)<<"Empty Edges In Inter_graph!";
@@ -297,16 +301,18 @@ class witin_graph
             }
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
 			{
-                auto vertexprop = get(boost::edge_weight, inter_graph);
+				typename boost::property_map<graph_type_, edge_weight_t>::type edgeprop =
+															get(boost::edge_weight, inter_graph);
+				//auto edgeprop = get(boost::edge_weight, inter_graph);
                 auto s = get(boost::vertex_name, inter_graph, source(*itr, inter_graph));
                 auto t = get(boost::vertex_name, inter_graph, target(*itr, inter_graph));
-                DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
-                    t->getName() <<"["<<target(*itr, inter_graph) <<"]";
+                DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]["<<edgeprop[*itr].src<<"]" << "-->" <<
+                    t->getName() <<"["<<target(*itr, inter_graph) <<"]["<<edgeprop[*itr].dst<<"]";
             }
         }
-		
-		/* 
-		 *  dump total graph to console 
+
+		/*
+		 *  dump total graph to console
 		 */
         void print()
 		{
@@ -318,17 +324,17 @@ class witin_graph
             printAllEdges();
             DLOG(INFO)<<"==========================";
         }
-        
-		/* 
-		 *  total nodes of inter_graph 
+
+		/*
+		 *  total nodes of inter_graph
 		 */
 		size_t getNumNodes() const{return num_vertices[inter_graph];};
-    
-		/* 
-		 *  total edges of inter_graph 
+
+		/*
+		 *  total edges of inter_graph
 		 */
-		size_t getNumEdges() const{return num_edges[inter_graph];}; 
-		
+		size_t getNumEdges() const{return num_edges[inter_graph];};
+
 		std::vector<EdgeDataType> getEAlledges();
         vector<EdgeDataType>  getInEdges(const NodeDataType& data);
 
@@ -337,17 +343,17 @@ class witin_graph
         size_t removeNode(const NodeDataType& data);
         int32_t removeEdge(const EdgeDataType & edge);
         int32_t removeEdge(const NodeDataType& node1,const NodeDataType& node2);
-       
-		/* 
-		 *  graph ===> linear vector  
-		 *	
+
+		/*
+		 *  graph ===> linear vector
+		 *
 		 */
 		vector<NodeDataType> graph_topological_sort()
 		{
 			std::vector<NodeDataType> ret;
 			deque<int> top_order;
-			topological_sort(inter_graph, front_inserter(top_order));		
-			
+			topological_sort(inter_graph, front_inserter(top_order));
+
             auto vertexprop = get(boost::vertex_name, inter_graph);
 			for(auto k : top_order)
 			{
@@ -357,7 +363,7 @@ class witin_graph
 			}
 			return ret;
 		}
-        
+
 		vector<NodeDataType> DFS();
 		vector<NodeDataType> BFS();
 

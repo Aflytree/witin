@@ -17,6 +17,7 @@
 #include <witin/graph/graph.h>
 #include <witin/tensor/tensor.h>
 #include <witin/op/nn.h>
+#include <witin/op/math.h>
 #include <witin/session/session.h>
 
 using namespace std;
@@ -110,55 +111,56 @@ int main(int argc, char *argv[])
 	mv_input_shape3.push_back(shape3);
 	mv_input_shape4.push_back(shape4);
 
-	std::shared_ptr <base1OpNode> mvNode1 =
-                        std::make_shared<mvOpNode>(mv_input_shape1, mv_tensor1, MV_OPNODE_ID, "mvOpNode1");
+	std::shared_ptr <base1OpNode> logNode1 =
+						std::make_shared<LogOpNode>(LOG_OPNODE_ID, "logOpNode1");
+    std::shared_ptr <base1OpNode> mvNode1 =
+						std::make_shared<mvOpNode>(mv_input_shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode1");
     std::shared_ptr <base1OpNode> mvNode2 =
-						std::make_shared<mvOpNode>(mv_input_shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode2");
-    std::shared_ptr <base1OpNode> mvNode3 =
-                        std::make_shared<mvOpNode>(mv_input_shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode3");
-    std::shared_ptr <base1OpNode> mvNode4 =
-                        std::make_shared<mvOpNode>(mv_input_shape4, mv_tensor4, MV_OPNODE_ID,"mvOpNode4");
-    // fy::graph::FyGraphType* graph =  new fy::graph::FyGraphType();
+                        std::make_shared<mvOpNode>(mv_input_shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode2");
+    std::shared_ptr <base1OpNode> addNode1 =
+                        std::make_shared<AddOpNode>(mv_input_shape4, MV_OPNODE_ID, "AddOpNode1");
+	
 	witin::base::WitinGraphType graph;
-	graph.addNode(mvNode1);
+	graph.addNode(logNode1);
+    graph.addNode(mvNode1);
     graph.addNode(mvNode2);
-    graph.addNode(mvNode3);
-    graph.addNode(mvNode4);
+    graph.addNode(addNode1);
 
-	graph.addEdge(mvNode1, mvNode2, EdgeProperty(0, 0));
-	graph.addEdge(mvNode2, mvNode3, EdgeProperty(0, 0));
-    graph.addEdge(mvNode3, mvNode4, EdgeProperty(0, 0));
+	graph.addEdge(logNode1,  mvNode1, EdgeProperty(13, 15));
+	graph.addEdge(logNode1,  mvNode2, EdgeProperty(0, 0));
+    graph.addEdge(mvNode1, addNode1, EdgeProperty(0, 0));
+    graph.addEdge(mvNode2, addNode1, EdgeProperty(0, 0));
     //graph.printAllNodes();
     //graph.printAllEdges();
     graph.print();
 
-	auto out = graph.outNodes();
-	DLOG(INFO) <<"GRAPH output node size = "<<out.size();
+	//auto out = graph.outNodes();
+	//DLOG(INFO) <<"GRAPH output node size = "<<out.size();
 
-	auto in = graph.inNodes();
-	DLOG(INFO) <<"GRAPH input node size = "<<in.size();
+	//auto in = graph.inNodes();
+	//DLOG(INFO) <<"GRAPH input node size = "<<in.size();
 
-	vector<int> input_shape;
-	vector<vector<int> > shapes;
+	//vector<int> input_shape;
+	//vector<vector<int> > shapes;
 
-	input_shape.push_back(1);
-	input_shape.push_back(38);
+	//input_shape.push_back(1);
+	//input_shape.push_back(38);
 
-	//shapes.push_back(shape);
-    //Tensor
-	Tensor *input_tensor = (Tensor * )malloc(sizeof(Tensor));
-	input_tensor->tensor_type = CONST_TYPE;
-    //fillTensor1(input_tensor, input_shape);
-    //
-	//input_tensor->print();
+	////shapes.push_back(shape);
+    ////Tensor
+	//Tensor *input_tensor = (Tensor * )malloc(sizeof(Tensor));
+	//input_tensor->tensor_type = CONST_TYPE;
+    ////fillTensor1(input_tensor, input_shape);
+    ////
+	////input_tensor->print();
 
-	std::vector<Tensor*> input_tensors;
-	input_tensors.push_back(input_tensor);
+	//std::vector<Tensor*> input_tensors;
+	//input_tensors.push_back(input_tensor);
 
-	////Session
-	Session ss;
-	ss.build(graph,shapes);
-	ss.run(graph, input_tensors);
+	//////Session
+	//Session ss;
+	//ss.build(graph,shapes);
+	//ss.run(graph, input_tensors);
 
 	////free data;
 

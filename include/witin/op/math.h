@@ -1,5 +1,5 @@
 /*================================================================
-*   
+*
 *   @file       ：math.h
 *   @author     ：afly
 *   @date       ：2020.08.23
@@ -43,6 +43,27 @@ class AbsOpNode : public OpNode{
         int id;
         std::string name;
 };
+
+
+class AddOpNode : public OpNode{
+    public:
+        AddOpNode(){}
+        AddOpNode(vector<vector<int> >shape,
+					int id = ADD_OPNODE_ID,
+					const std::string name = "")
+        : OpNode{id, name}
+        {
+            this->id = id;
+            this->name = name;
+			this->shape = shape;
+        }
+    private :
+        int id;
+		vector<vector<int> > shape;
+        std::string name;
+};
+
+
 
 } //namespace math
 } //namespace witin
