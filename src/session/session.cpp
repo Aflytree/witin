@@ -166,7 +166,10 @@ namespace base{
 				return true;
 		}
 	}
-	/*init mem from a file*/
+	/*
+	 * init mem from a file
+	 * used to multi net init
+	 */
 	int init_mem(void)
 	{
 		int generalUsedSize = 0;
@@ -211,7 +214,12 @@ namespace base{
 		std::vector<ROUND_CONFIG> rounds;
 
 		map<Tensor*, struct mem_record> tensor_mem_record_map;
-		init_mem();
+
+		int multi_net  = 0;
+		if(1 == multi_net)
+		{
+			init_mem();
+		}
 		/*
 		 * create all the tensors
 		 *
@@ -230,21 +238,23 @@ namespace base{
 
 				if(input_shape.size() == 0)
 				{
-					LOG(FATAL)<<"input_shape size is zero !";
+					LOG(FATAL)<<"input1_shape size is zero !";
 				}
 
-				//Tensor in(input_shape, PLACEHOLDER_TYPE);
 				//delete input_tensor_ptr in deconstructor of opNode
 				Tensor* input_tensor_ptr = new Tensor(input_shape, PLACEHOLDER_TYPE);
 				input_tensors.push_back(input_tensor_ptr);
 
-				DLOG(INFO)<<": tensor_type = "<<input_tensor_ptr->tensor_type;
 				if(node->isUseConstTensor())
 				{
 					Tensor* const_tensor;
 					node->getConstTensor(&const_tensor);
 					input_tensors.push_back(const_tensor);
 				}
+				//else if(node->isUsePlaceholderTensor())
+				//{
+				//	DLOG(INFO)<<"No.2 node is placeholder node:";
+				//}
 
 				DLOG(INFO)<<": input_tensors size = "<<input_tensors.size();
 				//set node input tensor
@@ -252,16 +262,14 @@ namespace base{
 
 				//infer_shape: get node output shape
 				vector<int> out_shape = node->infer_shape();
-
-				//Tensor out(out_shape, PLACEHOLDER_TYPE);
-				//Tensor* output_tensor_ptr = (Tensor *)malloc(sizeof(Tensor));
 				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
-
 				vector<Tensor*> output_tensors;
 				output_tensors.push_back(output_tensor_ptr);
 
 				//set node output tensor
 				node->set_output_tensors(output_tensors);
+
+#ifdef WITIN_DEBUG
 				vector<Tensor*>tmp_tensors;
 				node->get_output_tensors(tmp_tensors);
 
@@ -271,6 +279,7 @@ namespace base{
 					DLOG(INFO)<<": output_tensor";
 					kk->print();
 				}
+#endif
 			}
 			else /* normal node */
 			{
@@ -345,6 +354,7 @@ namespace base{
 
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
+
 				int node_id = node->getID();
 				if(node_id == MV_OPNODE_ID)
 				{
@@ -433,47 +443,13 @@ namespace base{
 					//  then print to file
 					if(input_tensors[j]->tensor_type == CONST_TYPE)
 					{
-						int availeColumnMem = caculateArryMem.getColumnAvailableMem();
-						int column_size = 0;
-						int start_alloc_column_addr = 0;
-						if(availeColumnMem > 0)
-						{
-							column_size =  input_tensors[j]->getShape()[1];
-							start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
+						int	column_size =  input_tensors[j]->getShape()[1];
+						int	start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
+						caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
 
-							if(availeColumnMem > column_size)
-							{
-								caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
-							}
-							else
-							{
-								LOG(FATAL)<<"caculateArryMem is not enough for COLUMN allocate!";
-							}
-						}
-						else
-						{
-							LOG(FATAL)<<"No caculateColumnArryMem is available !";
-						}
-
-						int availeRowMem = caculateArryMem.getRowAvailableMem();
 						int row_size =  input_tensors[j]->getShape()[0];
-						int start_alloc_row_addr = caculateArryMem.getArryRowUsedSize();
-						if(availeRowMem > 0)
-						{
-
-							if(availeRowMem > row_size)
-							{
-								caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
-							}
-							else
-							{
-								LOG(FATAL)<<"caculateArryMem is not enough for ROW allocate!";
-							}
-						}
-						else
-						{
-							LOG(FATAL)<<"No caculateRowArryMem is available !";
-						}
+						int start_alloc_row_addr = 0;
+						caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
 
 						struct mem_record mr;
 
@@ -572,24 +548,6 @@ namespace base{
 
 				rounds.push_back(round_cfg_in);
 			}
-			//else if(isOutputNode(op_list[i], out_nodes))
-			//{
-			//	ROUND_CONFIG round_cfg_out;
-			//	baseOpNodePtr node = op_list[i];
-			//	//getShape
-			//	vector<int> input_shape = node->getInputShape();
-			//	if(input_shape.size() == 0)
-			//	{
-			//		DLOG(INFO)<<"input_shape size is zero";
-			//		exit(1);
-			//	}
-
-			//	//1.inputnode share same memory
-			//	//2.getConst alloc mem for const and print to file
-			//	//3.allocate output tensor memory
-			//	rounds.push_back(round_cfg_out);
-			//	DLOG(INFO)<<"out node:";
-			//}
 			else  /*normal node*/
 			{
 				RD_CONTROL_ENABLE rce;
@@ -662,42 +620,14 @@ namespace base{
 					//  then print to file
 					if(input_tensors[n]->tensor_type == CONST_TYPE)
 					{
-						int availeColumnMem = caculateArryMem.getColumnAvailableMem();
-						int start_alloc_column_addr = 0;
-						int column_size = 0;
-
-						if(availeColumnMem > 0)
-						{
-							column_size =  input_tensors[n]->getShape()[1];
-							start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
-
-							if(availeColumnMem > column_size)
-							{
-								caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
-							}
-							else
-							{
-								LOG(FATAL)<<"caculateArryMem is not enough for column allocate!";
-							}
-						}
-						else
-						{
-							LOG(FATAL)<<"No caculateColumnArryMem is available !";
-						}
+						int column_size =  input_tensors[n]->getShape()[1];
+						int start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
+						caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
 
 						int row_size =  input_tensors[n]->getShape()[0];
-						int start_alloc_row_addr = caculateArryMem.getArryRowUsedSize();
+						int start_alloc_row_addr = 0;
 
-						int availeRowMem = caculateArryMem.getRowAvailableMem();
-						if(availeRowMem > row_size)
-						{
-							caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
-						}
-						else
-						{
-							LOG(FATAL)<<"caculateArryMem is not enough for Row allocate!";
-						}
-
+						caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
 						struct mem_record mr;
 
 						mr.mem_type = ARRAY_MEM_TYPE;
@@ -805,9 +735,11 @@ namespace base{
 		//write mem useage to a file
 		FILE*memSt;
 		memSt = fopen("./memInitFile.data", "w");
+		DLOG(INFO)<<"Write mem usage into memInitFile.data!";
 		fprintf(memSt, "%d\n", regFileMem.getGeneralUsedSize());
 		fprintf(memSt, "%d\n", caculateArryMem.getArryColumnUsedSize());
 		fprintf(memSt, "%d\n", caculateArryMem.getArryRowUsedSize());
+		fclose(memSt);
 		DLOG(INFO)<<"Generate BoardConfig end";
 	}
 

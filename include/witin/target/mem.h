@@ -21,6 +21,8 @@ namespace base{
 
 //ARRAY
 #define ARRAY_MEM_SIZE		2*1024 * 1*1024
+#define ARRAY_ROW_UP_SIZE	    1*1024
+#define ARRAY_ROW_DOWN_SIZE	    1*1024
 #define ARRAY_ROW_SIZE	    2*1024
 #define ARRAY_COLUMN_SIZE   1*1024
 
@@ -89,12 +91,12 @@ class RegFileMem : public Mem{
 		{
 			if(addr < 0 || size < 0)
 			{
-				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate RegFileMem!");
+				LOG(FATAL)<< "addr or size is less than 0  when allocate RegFileMem!";
 			}
 			DLOG(INFO)<<"REGFILE addr "<<addr<<" size "<<size;
 			if((generalUsedSize + size) > REGFILE_MEM_SIZE)
 			{
-				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate RegFileMem!");
+				LOG(FATAL)<< "allocMemAddr is overflow when allocate RegFileMem!";
 			}
 
 			generalUsedSize+=size;
@@ -171,6 +173,11 @@ class CaculateArryMem : public Mem{
 		//get available mem
 		int getRowAvailableMem()
 		{
+			if(ARRAY_ROW_SIZE - arrayRowUsedSize < 0)
+			{
+				LOG(FATAL)<<"No caculateColumnArryMem is available !";
+			}
+
 			return ARRAY_ROW_SIZE - arrayRowUsedSize;
 		}
 		int getColumnAvailableMem()
@@ -188,35 +195,52 @@ class CaculateArryMem : public Mem{
 			return arrayRowUsedSize;
 		}
 
+		//先分配column，再分配row
+		//先调用allocColumnMem()， 再调用allocRowMem()
 		//alloc Mem
 		int allocRowMem(int rowAddr, int size)
 		{
 			DLOG(INFO)<<" :ARRAY rowaddr "<<rowAddr<<" size "<<size;
+
+			//int newRowAddr = 0;
 			if(rowAddr < 0 || size < 0)
 			{
-				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate row CaculateArryMem!");
+				LOG(FATAL)<< "addr or size is less than 0  when allocate row CaculateArryMem!";
 			}
 
 			if((arrayRowUsedSize + size) > ARRAY_ROW_SIZE)
 			{
-				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate row CaculateArryMem!");
+				LOG(FATAL)<< "allocMemAddr is overflow when allocate row CaculateArryMem!";
 			}
 
-			arrayRowUsedSize+=size;
+			if(size > ARRAY_ROW_UP_SIZE)
+			{
+				LOG(FATAL)<< "rowAddr size should less than ARRAY_ROW_UP_SIZE or ARRAY_ROW_DOWN_SIZE!";
+			}
+
+			//arrayRowUsedSize+=size;
 			return 0;
 		}
 
-		int allocColumnMem(int columnAddr, int size)
+		int allocColumnMem(int &columnAddr, int size)
 		{
 			DLOG(INFO)<<" :ARRAY columnAddr "<<columnAddr<<" size "<<size;
 			if(columnAddr < 0 || size < 0)
 			{
-				PROGRAM_EXIT(1, "addr or size is less than 0  when allocate column CaculateArryMem!");
+				LOG(FATAL)<<"addr or size is less than 0  when allocate column CaculateArryMem!";
 			}
 
-			if((arrayColumnUsedSize + size) > ARRAY_ROW_SIZE)
+			if((arrayColumnUsedSize + size) > ARRAY_COLUMN_SIZE)
 			{
-				PROGRAM_EXIT(1, "allocMemAddr is overflow when allocate column CaculateArryMem!");
+				array_row_down_flag = true;
+				arrayColumnUsedSize = 0;
+				columnAddr = 0;
+				LOG(WARNING)<< "Use row down mem space!";
+			}
+
+			if(1 == array_row_down_flag && arrayColumnUsedSize > ARRAY_COLUMN_SIZE)
+			{
+				LOG(FATAL)<<"Column addr is not enough to alloc !";
 			}
 
 			arrayColumnUsedSize+=size;
@@ -246,6 +270,7 @@ class CaculateArryMem : public Mem{
 		int arrayColumnRemainSize = ARRAY_COLUMN_SIZE;
 		int arrayTotalRemainSize = ARRAY_MEM_SIZE;
 
+		bool array_row_down_flag = 0;
 		//row manager
 		int arrayRowUsedSize = 0;
 		int arrayRowUsedStart = 0;
