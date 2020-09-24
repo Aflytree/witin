@@ -25,8 +25,8 @@ using namespace witin::base;
 typedef witin::base::OpNode base1OpNode;
 
 int fillTensor1(Tensor *t, vector<int> shape){
-	
-	
+
+
 	char * data;
 	int size = 1;
 	for(size_t i = 0; i < shape.size();i++)
@@ -34,7 +34,7 @@ int fillTensor1(Tensor *t, vector<int> shape){
 		size *= shape[i];
 	}
 	data = (char*)malloc(size);
-	
+
 	for(int i = 0; i < shape[0]; i++)
 	{
 		for(int j = 0; j < shape[1]; j++)
@@ -43,7 +43,7 @@ int fillTensor1(Tensor *t, vector<int> shape){
 			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
 		}
 	}
-	
+
 	//for(auto kv : shape)
 	//{
 	//	DLOG(INFO)<<"kv = "<<kv;
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
           << "."
           << BOOST_VERSION % 100;
     //auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
-	
+
 	Tensor *mv_tensor1 = (Tensor * )malloc(sizeof(Tensor));
 	Tensor *mv_tensor2 = (Tensor * )malloc(sizeof(Tensor));
 	Tensor *mv_tensor3 = (Tensor * )malloc(sizeof(Tensor));
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 	mv_tensor2->tensor_type = CONST_TYPE;
 	mv_tensor3->tensor_type = CONST_TYPE;
 	mv_tensor4->tensor_type = CONST_TYPE;
-	
+
 	vector<int> mv_shape1;
 	vector<int> mv_shape2;
 	vector<int> mv_shape3;
@@ -88,26 +88,38 @@ int main(int argc, char *argv[])
 	mv_shape3.push_back(512);
     mv_shape4.push_back(512);
 	mv_shape4.push_back(18);
-    
+
+
+
 	fillTensor1(mv_tensor1, mv_shape1);
 	fillTensor1(mv_tensor2, mv_shape2);
 	fillTensor1(mv_tensor3, mv_shape3);
 	fillTensor1(mv_tensor4, mv_shape4);
 	//mv_tensor1->print();
-	
+
 	vector<int> shape1 = {1, 38};
 	vector<int> shape2 = {1, 128};
 	vector<int> shape3 = {1, 256};
 	vector<int> shape4 = {1, 512};
-		
+
+	vector<vector<int> > mv_input_shape1;
+	vector<vector<int> > mv_input_shape2;
+	vector<vector<int> > mv_input_shape3;
+	vector<vector<int> > mv_input_shape4;
+
+	mv_input_shape1.push_back(shape1);
+	mv_input_shape2.push_back(shape2);
+	mv_input_shape3.push_back(shape3);
+	mv_input_shape4.push_back(shape4);
+
 	std::shared_ptr <base1OpNode> mvNode1 =
-                        std::make_shared<mvOpNode>(shape1, mv_tensor1, MV_OPNODE_ID, "mvOpNode1");
+                        std::make_shared<mvOpNode>(mv_input_shape1, mv_tensor1, MV_OPNODE_ID, "mvOpNode1");
     std::shared_ptr <base1OpNode> mvNode2 =
-						std::make_shared<mvOpNode>(shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode2");
+						std::make_shared<mvOpNode>(mv_input_shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode2");
     std::shared_ptr <base1OpNode> mvNode3 =
-                        std::make_shared<mvOpNode>(shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode3");
+                        std::make_shared<mvOpNode>(mv_input_shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode3");
     std::shared_ptr <base1OpNode> mvNode4 =
-                        std::make_shared<mvOpNode>(shape4, mv_tensor4, MV_OPNODE_ID,"mvOpNode4");
+                        std::make_shared<mvOpNode>(mv_input_shape4, mv_tensor4, MV_OPNODE_ID,"mvOpNode4");
     // fy::graph::FyGraphType* graph =  new fy::graph::FyGraphType();
 	witin::base::WitinGraphType graph;
     EdgeProperty ep1;
@@ -116,12 +128,12 @@ int main(int argc, char *argv[])
 	EdgeProperty ep2;
     ep2.src = 12;
     ep2.dst = 13;
-	
+
 	graph.addNode(mvNode1);
     graph.addNode(mvNode2);
     graph.addNode(mvNode3);
     graph.addNode(mvNode4);
-    
+
 	graph.addEdge(mvNode1, mvNode2, ep1);
 	graph.addEdge(mvNode2, mvNode3, ep2);
     EdgeProperty ep3;
@@ -131,7 +143,7 @@ int main(int argc, char *argv[])
     //graph.printAllNodes();
     //graph.printAllEdges();
     graph.print();
-	
+
 	auto out = graph.outNodes();
 	DLOG(INFO) <<"GRAPH output node size = "<<out.size();
 
@@ -143,7 +155,7 @@ int main(int argc, char *argv[])
 
 	input_shape.push_back(1);
 	input_shape.push_back(38);
-	
+
 	//shapes.push_back(shape);
     //Tensor
 	Tensor *input_tensor = (Tensor * )malloc(sizeof(Tensor));
@@ -151,7 +163,7 @@ int main(int argc, char *argv[])
     //fillTensor1(input_tensor, input_shape);
     //
 	//input_tensor->print();
-	
+
 	std::vector<Tensor*> input_tensors;
 	input_tensors.push_back(input_tensor);
 

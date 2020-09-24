@@ -29,7 +29,7 @@ class mvOpNode : public OpNode{
 		virtual ~mvOpNode(){
 			delete const_tensor;
 		}
-        mvOpNode(vector<int> shape,
+        mvOpNode(vector< vector<int>> shape,
 				 Tensor *c_tensor,
 				 int id = MV_OPNODE_ID,
 				 const std::string name = "",
@@ -43,11 +43,8 @@ class mvOpNode : public OpNode{
 			fillTensorPtr(this->const_tensor,
 					c_tensor->getShape(),
 					c_tensor->getData());
-			//this->const_tensor = c_tensor;
             this->id = id;
             this->name = name;
-			this->act_en = act_en;
-			this->act_type = act_type;
 			this->mv_attrs.act_en = act_en;
 			this->mv_attrs.act_type = act_type;
         }
@@ -69,7 +66,7 @@ class mvOpNode : public OpNode{
 			}
 			vector<int> out_shape;
 
-			out_shape.push_back(input1_shape[0]);
+			out_shape.push_back(input1_shape[0][0]);
 			out_shape.push_back(input2_shape[1]);
 
 			for(auto kv : out_shape)
@@ -83,7 +80,7 @@ class mvOpNode : public OpNode{
 		 * get input1 shape of the mvOpNode
 		 *
 		 */
-		vector<int> getInputShape(){return input1_shape;}
+		vector< vector<int>> getInputShape(){return input1_shape;}
 
 		bool isUseConstTensor(){return true;}
 
@@ -95,21 +92,19 @@ class mvOpNode : public OpNode{
 
 		bool getActEn()
 		{
-			return act_en;
+			return mv_attrs.act_en;
 		}
 
 		string getActType()
 		{
-			return act_type;
+			return mv_attrs.act_type;
 		}
 
     private :
         int id;
         string name;
-		vector<int> input1_shape;
+		vector<vector<int> > input1_shape;
 		class MV_ATTRS mv_attrs;
-		bool act_en;
-		string act_type;
 		Tensor *const_tensor;
 };
 

@@ -97,9 +97,9 @@ class OpNode : public node{
 			return ret;
 		}
 
-		virtual vector<int> getInputShape()
+		virtual vector<vector<int> > getInputShape()
 		{
-			vector <int> ret;
+			vector<vector<int> > ret;
 			return ret;
 		}
 

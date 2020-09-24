@@ -205,14 +205,12 @@ namespace base{
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
 		Core core;
-		DLOG(INFO)<<"in_nodes.size(): "<<in_nodes.size();
+		DLOG(INFO)<<"graph in_nodes.size(): "<<in_nodes.size();
 		vector<baseOpNodePtr> op_list = InGraph.graph_topological_sort();
 
 		int roundTotal = (int)op_list.size();
 		core.setRoundTotal(roundTotal);
-		//core.dump();
 		std::vector<ROUND_CONFIG> rounds;
-
 		map<Tensor*, struct mem_record> tensor_mem_record_map;
 
 		int multi_net  = 0;
@@ -220,6 +218,7 @@ namespace base{
 		{
 			init_mem();
 		}
+
 		/*
 		 * create all the tensors
 		 *
@@ -233,17 +232,20 @@ namespace base{
 			{
 				DLOG(INFO)<<"This is input node:";
 				baseOpNodePtr node = op_list[i];
-				vector<int> input_shape = node->getInputShape();
+				vector<vector<int> > input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
 
-				if(input_shape.size() == 0)
+				if(input_shape[0].size() == 0)
 				{
-					LOG(FATAL)<<"input1_shape size is zero !";
+					LOG(FATAL)<<"input_shape size should not be zero !";
 				}
 
-				//delete input_tensor_ptr in deconstructor of opNode
-				Tensor* input_tensor_ptr = new Tensor(input_shape, PLACEHOLDER_TYPE);
-				input_tensors.push_back(input_tensor_ptr);
+				for(int p = 0; p <input_shape.size(); p++)
+				{
+					//delete input_tensor_ptr in deconstructor of opNode
+					Tensor* input_tensor_ptr = new Tensor(input_shape[p], PLACEHOLDER_TYPE);
+					input_tensors.push_back(input_tensor_ptr);
+				}
 
 				if(node->isUseConstTensor())
 				{
@@ -251,10 +253,6 @@ namespace base{
 					node->getConstTensor(&const_tensor);
 					input_tensors.push_back(const_tensor);
 				}
-				//else if(node->isUsePlaceholderTensor())
-				//{
-				//	DLOG(INFO)<<"No.2 node is placeholder node:";
-				//}
 
 				DLOG(INFO)<<": input_tensors size = "<<input_tensors.size();
 				//set node input tensor
@@ -297,7 +295,7 @@ namespace base{
 					//in this cases, this node input_tensors just pointer to
 					//the output tensors of the input node, so we can allocate
 					//the same memory for the memory of output tensors and the
-					//memory of input tensor.
+					//memory of input tensors.
 					vector<Tensor*> previous_output_tensors;
 					innodes[j]->get_output_tensors(previous_output_tensors);
 
@@ -325,10 +323,8 @@ namespace base{
 				vector<int> out_shape = node->infer_shape();
 				vector<Tensor*> output_tensors;
 
-				//Tensor out(out_shape, PLACEHOLDER_TYPE);
 				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
 				output_tensors.push_back(output_tensor_ptr);
-				DLOG(INFO)<<"out_tensors.size : "<<output_tensors.size();
 				//set node output tensor
 				node->set_output_tensors(output_tensors);
 			}
@@ -391,12 +387,7 @@ namespace base{
 				}
 
 				//getShape
-				vector<int> input_shape = node->getInputShape();
-				if(input_shape.size() != 2)
-				{
-					LOG(FATAL)<<"input_shape size should be 2";
-				}
-
+				vector<vector<int> > input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
 
@@ -413,9 +404,9 @@ namespace base{
 							DLOG(INFO)<<": start_alloc_addr "<<start_alloc_addr;
 							DLOG(INFO)<<": availeMem "<<availeMem;
 
-							if(availeMem > input_shape[1])
+							if(availeMem > input_shape[0][1])
 							{
-								regFileMem.allocMemAddr(start_alloc_addr, input_shape[1]);
+								regFileMem.allocMemAddr(start_alloc_addr, input_shape[0][1]);
 							}
 							else
 							{
@@ -425,10 +416,10 @@ namespace base{
 							struct mem_record mr;
 							mr.mem_type = REGFILE_MEM_TYPE;
 							mr.start = start_alloc_addr;
-							mr.len = input_shape[1];
+							mr.len = input_shape[0][1];
 
 							arry_grp_cfg.regfile_addr_start = start_alloc_addr;
-							arry_grp_cfg.regfile_addr_len = input_shape[1];
+							arry_grp_cfg.regfile_addr_len = input_shape[0][1];
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(input_tensors[j], mr));
@@ -560,12 +551,6 @@ namespace base{
 				ACTV_GRP_CONFIG actv_grp_cfg;
 
 				baseOpNodePtr node = op_list[i];
-				//getShape
-				vector<int> input_shape = node->getInputShape();
-				if(input_shape.size() == 0)
-				{
-					LOG(FATAL)<<"input_shape size is zero !";
-				}
 
 				if(node->getID() == MV_OPNODE_ID)
 				{
