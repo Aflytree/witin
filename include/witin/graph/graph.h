@@ -175,7 +175,7 @@ class witin_graph
 
 			if(erange.first == erange.second)
 			{
-				DLOG(INFO)<<"Empty Edges In Inter_graph!";
+				DLOG(WARNING)<<"Empty Edges In Inter_graph!";
             }
 
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
@@ -283,7 +283,6 @@ class witin_graph
             for(vertex_iter itr = vrange.first; itr!=vrange.second; ++itr){
                 NodeDataType vprop = vertexprop[*itr];
                 v.push_back(vprop);
-                //DLOG(INFO)<<vprop;
             }
             return v;
         };
@@ -298,7 +297,7 @@ class witin_graph
 
 			if(erange.first == erange.second)
 			{
-				DLOG(INFO)<<"Empty Edges In Inter_graph!";
+				DLOG(WARNING)<<"Empty Edges In Inter_graph!";
                 return;
             }
             for(edge_iter itr = erange.first; itr != erange.second; ++itr)
@@ -330,12 +329,18 @@ class witin_graph
 		/*
 		 *  total nodes of inter_graph
 		 */
-		size_t getNumNodes() const{return num_vertices[inter_graph];};
+		size_t getNumNodes() const
+		{
+			return num_vertices[inter_graph];
+		};
 
 		/*
 		 *  total edges of inter_graph
 		 */
-		size_t getNumEdges() const{return num_edges[inter_graph];};
+		size_t getNumEdges() const
+		{
+			return num_edges[inter_graph];
+		};
 
 		std::vector<EdgeDataType> getEAlledges();
         vector<EdgeDataType>  getInEdges(const NodeDataType& data);
@@ -385,7 +390,7 @@ class witin_graph
 			//.dot ===> pdf
 			string all = "dot -Tpdf " + tmp1 + " -o "+  cc;
 			const char* all_cmd = all.c_str();
-			DLOG(INFO)<<"dot == > pdf cmd:"all_cmd;
+			DLOG(INFO)<<"dot == > pdf cmd:"<<all_cmd;
 			system(all_cmd);
 		}
 
