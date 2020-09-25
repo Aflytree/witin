@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
                         std::make_shared<mvOpNode>(mv_input_shape3, mv_tensor3, MV_OPNODE_ID, "mvOpNode2");
     std::shared_ptr <base1OpNode> addNode1 =
                         std::make_shared<AddOpNode>(mv_input_shape4, MV_OPNODE_ID, "AddOpNode1");
-	
+
 	witin::base::WitinGraphType graph;
 	graph.addNode(logNode1);
     graph.addNode(mvNode1);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     //graph.printAllNodes();
     //graph.printAllEdges();
     graph.print();
-
+	graph.writeToPDF("test.dot");
 	//auto out = graph.outNodes();
 	//DLOG(INFO) <<"GRAPH output node size = "<<out.size();
 

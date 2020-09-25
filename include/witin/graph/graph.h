@@ -10,10 +10,12 @@
 #ifndef _GRAPH_H
 #define _GRAPH_H
 
+#include <stdlib.h>
 #include <boost/config.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/graph/graphviz.hpp>
 
 #include <dmlc/logging.h>
 #include <witin/node/node.h>
@@ -367,7 +369,25 @@ class witin_graph
 		vector<NodeDataType> DFS();
 		vector<NodeDataType> BFS();
 
-        int32_t writeToPDF(char const *filename){}
+        int32_t writeToPDF(std::string filename)
+		{
+			std::ofstream ofs(filename);
+			string tmp1 = filename;
+			if(ofs.fail())
+			{
+				LOG(FATAL)<<"Open file  "<<filename<<" error!";
+			}
+			//write_graphviz(ofs, inter_graph, make_label_writer());
+			write_graphviz(ofs, inter_graph);
+			char* file = strtok(const_cast<char*>(filename.c_str()), ".");
+			string const& cc = string(file) + string(".pdf");
+			char const* c = cc.c_str();
+			//.dot ===> pdf
+			string all = "dot -Tpdf " + tmp1 + " -o "+  cc;
+			const char* all_cmd = all.c_str();
+			DLOG(INFO)<<"dot == > pdf cmd:"all_cmd;
+			system(all_cmd);
+		}
 
     private:
         graph_type_ inter_graph;
