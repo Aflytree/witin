@@ -386,12 +386,13 @@ class witin_graph
 			write_graphviz(ofs, inter_graph);
 			char* file = strtok(const_cast<char*>(filename.c_str()), ".");
 			string const& cc = string(file) + string(".pdf");
-			char const* c = cc.c_str();
 			//.dot ===> pdf
 			string all = "dot -Tpdf " + tmp1 + " -o "+  cc;
 			const char* all_cmd = all.c_str();
 			DLOG(INFO)<<"dot == > pdf cmd:"<<all_cmd;
-			system(all_cmd);
+			auto ret = system(all_cmd);
+			if(ret)
+			    LOG(FATAL)<<"Cmd execute error !";
 		}
 
     private:
