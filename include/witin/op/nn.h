@@ -29,7 +29,7 @@ class mvOpNode : public OpNode{
 		virtual ~mvOpNode(){
 			delete const_tensor;
 		}
-        mvOpNode(vector< vector<int>> shape,
+        mvOpNode(vector<vector<int> > shape,
 				 Tensor *c_tensor,
 				 int id = MV_OPNODE_ID,
 				 const std::string name = "",
@@ -53,16 +53,17 @@ class mvOpNode : public OpNode{
 		 * infer output shape of the mvOpNode
 		 *
 		 */
-		vector<int> infer_shape()
+		vector<vector<int> > infer_shape()
 		{
 			Tensor *t;
 			getConstTensor(&t);
 
 			vector<int> input2_shape = t->getShape();
 
-			if(input1_shape.size() != 2 || input2_shape.size() != 2)
+			if(input1_shape[0].size() != 2 || input2_shape.size() != 2)
 			{
-				DLOG(INFO)<<"[infer_shape] mvOpNode shape size should be 2!";
+				LOG(FATAL)<<"[infer_shape] mvOpNode shape size should be 2! "<<
+								input1_shape.size() <<" vs "<<input2_shape.size();
 			}
 			vector<int> out_shape;
 
@@ -73,7 +74,9 @@ class mvOpNode : public OpNode{
 			{
 				DLOG(INFO)<<"[infer shape] out_shape : "<<kv;
 			}
-			return out_shape;
+			vector<vector<int> > ret;
+			ret.push_back(out_shape);
+			return ret;
 		};
 
 		/*
@@ -108,7 +111,7 @@ class mvOpNode : public OpNode{
 		Tensor *const_tensor;
 };
 
-} //namespace nn
+} //namespace base
 } //namespace witin
 
 

@@ -168,7 +168,7 @@ class CaculateArryMem : public Mem{
 		CaculateArryMem(){}
 
 		//used mem init
-		int init(){}
+		void init(){}
 
 		//get available mem
 		int getRowAvailableMem()

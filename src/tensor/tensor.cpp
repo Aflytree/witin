@@ -16,7 +16,7 @@ namespace base{
 
     Tensor::Tensor(){
     }
-    
+
 	bool Tensor::operator ==(const Tensor & other) const {
 		 //shape == and data ==
     }
@@ -24,16 +24,16 @@ namespace base{
     bool Tensor::operator !=(const Tensor & other) const {
 		//shape != or data !=
     }
-    
+
 	//size_t Tensor::ndim() const{
 	//	return shape.size();
     //}
-    
+
 	void Tensor::setShape(std::vector<int> s) {
-		//why???	
-		DLOG(INFO)<<"tensor shape old size:"<<shape.size();
+		//why???
+		//DLOG(INFO)<<"tensor shape old size:"<<shape.size();
 		shape.resize(2);
-		DLOG(INFO)<<"tensor shape size:"<<shape.size();
+		//DLOG(INFO)<<"tensor shape size:"<<shape.size();
 		for(auto kv : shape){
 			DLOG(INFO)<<"    old shape:"<<kv;
 		}
@@ -43,32 +43,32 @@ namespace base{
 		//}
 		DLOG(INFO)<<"tensor shape size:"<<shape.size();
     }
-    
+
 	std::vector<int> Tensor::getShape() const {
 		return shape;
     }
-	
+
 	int Tensor::setData(void * data_in) {
 		int size = 1;
 		for(auto sp : shape){
 			size *= sp;
 		}
-		DLOG(INFO)<<"size:"<<size;
-		
+		//DLOG(INFO)<<"size:"<<size;
+
 		__data = (char*)malloc(size * sizeof(char));
-		//int a = 0;	
+		//int a = 0;
 		//memcpy(__data, &a, size);
 		if(__data == NULL){
 			DLOG(INFO)<<"tensor setData malloc error : return NULL ";
 		}
-		
+
 		memcpy(__data, data_in, size);
 	}
-	
+
     void* Tensor::getData() const {
 		return (void*)__data;
 	}
-    
+
 	int Tensor::getSize(int &s) const {
 		int size = 1;
 		for(auto sp : shape){
@@ -86,8 +86,8 @@ namespace base{
 		for(auto sp : getShape()){
 			DLOG(INFO)<<sp<<" ";
 		}
-		DLOG(INFO)<<"Tensor type:"<<tensor_type;	
-		stringstream ss; 
+		DLOG(INFO)<<"Tensor type:"<<tensor_type;
+		stringstream ss;
 		if(tensor_type == CONST_TYPE)
 		{
 			DLOG(INFO)<<"Data is:";
@@ -113,9 +113,9 @@ namespace base{
 		{
 			size *= shape[i];
 		}
-		DLOG(INFO)<<"size1 = "<<size;
+		//DLOG(INFO)<<"size1 = "<<size;
 		data = (char*)malloc(size);
-		
+
 		if(random)
 		{
 			for(int i = 0; i < shape[0]; i++)

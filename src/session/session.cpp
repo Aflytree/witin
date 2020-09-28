@@ -12,13 +12,19 @@
 #include <witin/target/core.h>
 #include <witin/target/mem.h>
 #include <witin/op/nn.h>
+//#include <witin/op/active.h>
+#include "../../include/witin/op/active.h"
+#include <witin/op/math.h>
 #include <witin/utils/debug.h>
 
 using namespace witin::base;
 
+//class tmpNode no;
 typedef std::shared_ptr<witin::base::OpNode> baseOpNodePtr;
 typedef std::shared_ptr<witin::base::mvOpNode> mvOpNodePtr;
-
+typedef std::shared_ptr<witin::base::LogOpNode> lOpNodePtr;
+typedef std::shared_ptr<witin::base::TanhOpNode> tanhOpNodePtr;
+typedef std::shared_ptr<witin::base::ActOpNode> actOpNodePtr;
 
 class CaculateArryMem caculateArryMem;
 class DACFifoMem dacFifoMem;
@@ -223,14 +229,14 @@ namespace base{
 		 * create all the tensors
 		 *
 		 */
-		DLOG(INFO)<<"===================================";
+		DLOG(INFO)<<"===========================Generate Tensors=========================";
 		DLOG(INFO)<<"Create input and output tensors ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
 			//tensor
 			if(isInputNode(op_list[i], in_nodes))
 			{
-				DLOG(INFO)<<"This is input node:";
+				DLOG(INFO)<<"This is input node: "<<op_list[i]->getName();
 				baseOpNodePtr node = op_list[i];
 				vector<vector<int> > input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
@@ -254,13 +260,12 @@ namespace base{
 					input_tensors.push_back(const_tensor);
 				}
 
-				DLOG(INFO)<<": input_tensors size = "<<input_tensors.size();
-				//set node input tensor
+				//set node input tensor, include const tensor
 				node->set_input_tensors(input_tensors);
 
 				//infer_shape: get node output shape
-				vector<int> out_shape = node->infer_shape();
-				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
+				vector<vector<int> > out_shape = node->infer_shape();
+				Tensor* output_tensor_ptr = new Tensor(out_shape[0], PLACEHOLDER_TYPE);
 				vector<Tensor*> output_tensors;
 				output_tensors.push_back(output_tensor_ptr);
 
@@ -273,19 +278,20 @@ namespace base{
 
 				for(auto kk : tmp_tensors)
 				{
-					DLOG(INFO)<<": "<<node->getName();
-					DLOG(INFO)<<": output_tensor";
-					kk->print();
+					//DLOG(INFO)<<": "<<node->getName();
+					//DLOG(INFO)<<"output_tensor :";
+					//kk->print();
 				}
 #endif
 			}
 			else /* normal node */
 			{
-				DLOG(INFO)<<"This is normal node";
+				DLOG(INFO)<<"This is normal node : "<<op_list[i]->getName();
 				vector<Tensor*> input_tensors;
 				baseOpNodePtr node = op_list[i];
 
 				vector<baseOpNodePtr> innodes = InGraph.innodes_of_node(op_list[i]);
+				DLOG(INFO)<<"Input node total:"<<innodes.size();
 				//innodes size now is 1
 				//TODO:tensor_index of the front node
 				for(size_t j = 0; j < innodes.size(); j++)
@@ -299,11 +305,11 @@ namespace base{
 					vector<Tensor*> previous_output_tensors;
 					innodes[j]->get_output_tensors(previous_output_tensors);
 
-					DLOG(INFO)<<innodes[j]->getName();
+					DLOG(INFO)<<"inputnode :"<<j<<" "<<innodes[j]->getName();
 					for(auto kv : previous_output_tensors)
 					{
-						DLOG(INFO)<<" : input_tensor";
-						kv->print();
+						//DLOG(INFO)<<" input_tensor";
+						//kv->print();
 						input_tensors.push_back(kv);
 					}
 				}
@@ -315,15 +321,14 @@ namespace base{
 					node->getConstTensor(&const_tensor);
 					input_tensors.push_back(const_tensor);
 				}
-				DLOG(INFO)<<"input_tensors.size : "<<input_tensors.size();
 				//set node input tensor
 				node->set_input_tensors(input_tensors);
 
 				//infer_shape: get node output shape
-				vector<int> out_shape = node->infer_shape();
+				vector<vector<int> > out_shape = node->infer_shape();
 				vector<Tensor*> output_tensors;
 
-				Tensor* output_tensor_ptr = new Tensor(out_shape, PLACEHOLDER_TYPE);
+				Tensor* output_tensor_ptr = new Tensor(out_shape[0], PLACEHOLDER_TYPE);
 				output_tensors.push_back(output_tensor_ptr);
 				//set node output tensor
 				node->set_output_tensors(output_tensors);
@@ -339,22 +344,24 @@ namespace base{
 		{
 			if(isInputNode(op_list[i], in_nodes))
 			{
-				DLOG(INFO)<<"input node:";
-				ROUND_CONFIG round_cfg_in;
+				DLOG(INFO)<<"[INPUT] node:"<<op_list[i]->getName();
 				RD_CONTROL_ENABLE rce;
 				rce.cnt = i;
-				rce.weight_en = true;
-				ARRAY_GRP_CONFIG arry_grp_cfg;
-				ACTV_GRP_CONFIG actv_grp_cfg;
-				WEIGHT_PARAMS weight_params;
 
+				ROUND_CONFIG round_cfg_in;
+				ARRAY_GRP_CONFIG arry_grp_cfg;
+				WEIGHT_PARAMS weight_params;
+				ACTV_GRP_CONFIG actv_grp_cfg;
+				READDER_CONFIG readder_cfg;
+				REACTV_GRP_CONFIG reactv_grp_cfg;
+
+				dump_arry_grp_cfg(arry_grp_cfg);
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
 
 				int node_id = node->getID();
 				if(node_id == MV_OPNODE_ID)
 				{
-					DLOG(INFO)<<"This dense node!!";
 					mvOpNodePtr mv_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
 					if(mv_ptr == NULL)
 					{
@@ -382,27 +389,40 @@ namespace base{
 				else if(node_id == MIN_OPNODE_ID){}
 				else if(node_id == INVERT_OPNODE_ID){}
 				else if(node_id == SHIFT_OPNODE_ID){}
+				else if(node_id == ADD_OPNODE_ID){}
+				else if(node->getID() == ACT_OPNODE_ID)
+				{
+					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
+					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
+				}
+
 				else{
 					LOG(FATAL)<<"Do not support opnode ID :"<<node_id;
 				}
+
+				if(node_id != MV_OPNODE_ID)
+					rce.weight_en = false;
+				else
+					rce.weight_en = true;
 
 				//getShape
 				vector<vector<int> > input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
 
-				DLOG(INFO)<<": INPUTNODE input_tensors size = "<<input_tensors.size();
+				DLOG(INFO)<<"[INPUTNODE] input_tensors total : "<<input_tensors.size();
 				for(int j = 0; j < input_tensors.size();j++)
 				{
 					if(input_tensors[j]->tensor_type == PLACEHOLDER_TYPE)
 					{
+						DLOG(INFO)<<"		No."<<j<<" PLACEHOLDER_TYPE";
 						//1.allocate mem for input if not none : regfile mem
 						int availeMem = regFileMem.getAvailableMem();
 						if(availeMem > 0)
 						{
 							int start_alloc_addr = regFileMem.getGeneralUsedSize();
-							DLOG(INFO)<<": start_alloc_addr "<<start_alloc_addr;
-							DLOG(INFO)<<": availeMem "<<availeMem;
+							DLOG(INFO)<<"regfileMem: start_alloc_addr "<<start_alloc_addr;
+							DLOG(INFO)<<"regfileMem:        availeMem "<<availeMem;
 
 							if(availeMem > input_shape[0][1])
 							{
@@ -418,8 +438,28 @@ namespace base{
 							mr.start = start_alloc_addr;
 							mr.len = input_shape[0][1];
 
-							arry_grp_cfg.regfile_addr_start = start_alloc_addr;
-							arry_grp_cfg.regfile_addr_len = input_shape[0][1];
+							if(node->getID() == MV_OPNODE_ID)
+							{
+								arry_grp_cfg.regfile_addr_start = start_alloc_addr;
+								arry_grp_cfg.regfile_addr_len = input_shape[0][1];
+							}
+							else if(node->getID() == ADD_OPNODE_ID)
+							{
+								readder_cfg.add_addr.push_back(mr.start);
+								readder_cfg.readder_length = mr.len;
+							}
+							else if(node->getID() == ABS_OPNODE_ID)
+							{
+
+							}
+							else if(node->getID() == ACT_OPNODE_ID)
+							{
+								reactv_grp_cfg.reactv_fetch_addr = mr.start;
+								reactv_grp_cfg.reactv_store_length = mr.len;
+							}
+							else{
+								DLOG(INFO)<<"Do not support opnode ID";
+							}
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(input_tensors[j], mr));
@@ -434,6 +474,7 @@ namespace base{
 					//  then print to file
 					if(input_tensors[j]->tensor_type == CONST_TYPE)
 					{
+						DLOG(INFO)<<"	No."<<j<<" CONST_TYPE";
 						int	column_size =  input_tensors[j]->getShape()[1];
 						int	start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
 						caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
@@ -492,7 +533,7 @@ namespace base{
 				vector<Tensor*> output_tensors;
 				node->get_output_tensors(output_tensors);
 
-				DLOG(INFO)<<": INPUTNODE out_tensors size = "<<output_tensors.size();
+				DLOG(INFO)<<": [INPUTNODE] out_tensors total : "<<output_tensors.size();
 				for(int k = 0; k < output_tensors.size();k++)
 				{
 					if(output_tensors[k]->tensor_type == PLACEHOLDER_TYPE)
@@ -519,8 +560,30 @@ namespace base{
 							mr.start = start_alloc_addr;
 							mr.len = tensor_shape[1];
 
-							arry_grp_cfg.store_addr = start_alloc_addr;
-							arry_grp_cfg.store_len = tensor_shape[1];
+							if(node->getID() == MV_OPNODE_ID){
+								arry_grp_cfg.store_addr = start_alloc_addr;
+								arry_grp_cfg.store_len = tensor_shape[1];
+							}
+							else if(node->getID() == ADD_OPNODE_ID)
+							{
+								readder_cfg.readder_store = start_alloc_addr;
+							}
+							else if(node->getID() == ABS_OPNODE_ID)
+							{
+
+							}
+							else if(node->getID() == EXP_OPNODE_ID)
+							{
+
+							}
+							else if(node->getID() == ACT_OPNODE_ID)
+							{
+								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
+							}
+							else
+							{
+								LOG(FATAL)<<"Unsupport opnode id";
+							}
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(output_tensors[k], mr));
@@ -531,8 +594,12 @@ namespace base{
 						}
 					}
 				}
+#ifdef WITIN_DEBUG
 				dump_rd_ctrl_enable(rce);
 				dump_arry_grp_cfg(arry_grp_cfg);
+				dump_readder_grp_cfg(readder_cfg);
+				dump_reactv_grp_cfg(reactv_grp_cfg);
+#endif
 				round_cfg_in.rd_control_enable = rce;
 				round_cfg_in.array_grp_config = arry_grp_cfg;
 				round_cfg_in.actv_grp_config = actv_grp_cfg;
@@ -541,6 +608,7 @@ namespace base{
 			}
 			else  /*normal node*/
 			{
+				DLOG(INFO)<<"[NORMAL] node:"<<op_list[i]->getName();
 				RD_CONTROL_ENABLE rce;
 				rce.cnt = i;
 				rce.weight_en = true;
@@ -549,12 +617,13 @@ namespace base{
 				ARRAY_GRP_CONFIG arry_grp_cfg;
 				WEIGHT_PARAMS weight_params;
 				ACTV_GRP_CONFIG actv_grp_cfg;
+				READDER_CONFIG readder_cfg;
+				REACTV_GRP_CONFIG reactv_grp_cfg;
 
 				baseOpNodePtr node = op_list[i];
 
 				if(node->getID() == MV_OPNODE_ID)
 				{
-					DLOG(INFO)<<"This dense node!!";
 					mvOpNodePtr mv_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
 					if(mv_ptr == NULL)
 					{
@@ -572,6 +641,11 @@ namespace base{
 						rce.actv_en = false;
 					}
 				}
+				else if(node->getID() == ACT_OPNODE_ID)
+				{
+					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
+					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
+				}
 
 				vector<Tensor*> input_tensors;
 				node->get_input_tensors(input_tensors);
@@ -580,7 +654,7 @@ namespace base{
 				//tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 				//											(input_tensors[j], mr));
 
-				DLOG(INFO)<<": NORM input_tensors size = "<<input_tensors.size();
+				DLOG(INFO)<<"[NORMAL] input_tensors total : "<<input_tensors.size();
 				for(size_t n = 0; n < input_tensors.size();n++ )
 				{
 
@@ -591,10 +665,32 @@ namespace base{
 					if(iter != tensor_mem_record_map.end())
 					{
 						DLOG(INFO)<<"find tensor in tensor_mem_record_map";
+						if(node->getID() == MV_OPNODE_ID)
+						{
+							struct mem_record mr = iter->second;
+							arry_grp_cfg.regfile_addr_start = mr.start;
+							arry_grp_cfg.regfile_addr_len = mr.len;
+						}
+						else if(node->getID() == ADD_OPNODE_ID)
+						{
+							struct mem_record mr = iter->second;
+							readder_cfg.add_addr.push_back(mr.start);
+							readder_cfg.readder_length = mr.len;
 
-						struct mem_record mr = iter->second;
-						arry_grp_cfg.regfile_addr_start = mr.start;
-						arry_grp_cfg.regfile_addr_len = mr.len;
+						}
+						else if(node->getID() == ABS_OPNODE_ID)
+						{
+
+						}
+						else if(node->getID() == ACT_OPNODE_ID)
+						{
+							struct mem_record mr = iter->second;
+							reactv_grp_cfg.reactv_fetch_addr = mr.start;
+							reactv_grp_cfg.reactv_store_length = mr.len;
+						}
+						else{
+							DLOG(INFO)<<"Do not support opnode ID";
+						}
 					}
 					else
 					{
@@ -659,7 +755,7 @@ namespace base{
 				vector<Tensor*> norm_output_tensors;
 				node->get_output_tensors(norm_output_tensors);
 
-				DLOG(INFO)<<": NORM output_tensors size = "<<norm_output_tensors.size();
+				DLOG(INFO)<<"[NORMAL] output_tensors total : "<<norm_output_tensors.size();
 				for(int m = 0; m < norm_output_tensors.size();m++)
 				{
 					if(norm_output_tensors[m]->tensor_type == PLACEHOLDER_TYPE)
@@ -685,9 +781,32 @@ namespace base{
 							mr.mem_type = REGFILE_MEM_TYPE;
 							mr.start = start_alloc_addr;
 							mr.len = tensor_shape[1];
+							if(node->getID() == MV_OPNODE_ID)
+							{
+								arry_grp_cfg.store_addr = start_alloc_addr;
+								arry_grp_cfg.store_len = tensor_shape[1];
+							}
+							else if(node->getID() == ADD_OPNODE_ID)
+							{
+								readder_cfg.readder_store = start_alloc_addr;
+							}
+							else if(node->getID() == ABS_OPNODE_ID)
+							{
 
-							arry_grp_cfg.store_addr = start_alloc_addr;
-							arry_grp_cfg.store_len = tensor_shape[1];
+							}
+							else if(node->getID() == EXP_OPNODE_ID)
+							{
+
+							}
+							else if(node->getID() == ACT_OPNODE_ID)
+							{
+								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
+							}
+							else
+							{
+								LOG(FATAL)<<"Unsupport opnode id";
+							}
+
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 															(norm_output_tensors[m], mr));
@@ -703,9 +822,12 @@ namespace base{
 				{
 					DLOG(INFO)<<"This is output node !!";
 				}
-
+#ifdef WITIN_DEBUG
 				dump_rd_ctrl_enable(rce);
 				dump_arry_grp_cfg(arry_grp_cfg);
+				dump_readder_grp_cfg(readder_cfg);
+				dump_reactv_grp_cfg(reactv_grp_cfg);
+#endif
 				round_cfg_norm.rd_control_enable = rce;
 				round_cfg_norm.array_grp_config = arry_grp_cfg;
 				round_cfg_norm.actv_grp_config = actv_grp_cfg;

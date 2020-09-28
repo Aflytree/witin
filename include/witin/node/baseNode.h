@@ -27,7 +27,7 @@ class node{
         std::string name;
 };
 
-} // namespace node
+} // namespace base
 } // namespace witin
 
 #endif //NODE_H

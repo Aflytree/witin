@@ -318,12 +318,12 @@ class witin_graph
         void print()
 		{
             DLOG(INFO)<<"Dump Graph:";
-            DLOG(INFO)<<"==========================";
+            DLOG(INFO)<<"================================";
             DLOG(INFO)<<"graph nodes:";
 			printAllNodes();
             DLOG(INFO)<<"graph edges:";
             printAllEdges();
-            DLOG(INFO)<<"==========================";
+            DLOG(INFO)<<"================================";
         }
 
 		/*
@@ -393,6 +393,7 @@ class witin_graph
 			auto ret = system(all_cmd);
 			if(ret)
 			    LOG(FATAL)<<"Cmd execute error !";
+			return 0;
 		}
 
     private:

@@ -91,9 +91,9 @@ class OpNode : public node{
 			return 0;
 		}
 
-		virtual vector<int> infer_shape()
+		virtual vector<vector<int> > infer_shape()
 		{
-			vector <int> ret;
+			vector<vector<int> > ret;
 			return ret;
 		}
 

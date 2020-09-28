@@ -109,10 +109,13 @@ int main(int argc, char *argv[])
 	mv_input_shape1.push_back(shape1);
 	mv_input_shape2.push_back(shape2);
 	mv_input_shape3.push_back(shape3);
+
+	//add two input shape of add op
+	mv_input_shape4.push_back(shape4);
 	mv_input_shape4.push_back(shape4);
 
 	std::shared_ptr <base1OpNode> logNode1 =
-						std::make_shared<LogOpNode>(LOG_OPNODE_ID, "logOpNode1");
+						std::make_shared<LogOpNode>(mv_input_shape1, LOG_OPNODE_ID, "logOpNode1");
     std::shared_ptr <base1OpNode> mvNode1 =
 						std::make_shared<mvOpNode>(mv_input_shape2, mv_tensor2, MV_OPNODE_ID, "mvOpNode1");
     std::shared_ptr <base1OpNode> mvNode2 =

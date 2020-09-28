@@ -49,40 +49,40 @@ enum DATA_TYPE
 class Tensor{
 	//const TensorNode* operator ->();
     //typedef T T_
-    public: 
+    public:
 		//default
 		Tensor();
-		
 		~Tensor()
 		{
 			free(__data);
-		};		
-		
-		Tensor(vector<int> shape = {}, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE, 
+		};
+
+		Tensor(vector<int> shape = {}, enum TENSOR_TYPE tensor_type = PLACEHOLDER_TYPE,
 								  int data_type = INT8_TYPE)
 		{
 			this->shape = shape;
 			this->data_type = data_type;
 			this->tensor_type = tensor_type;
 		}
-		
+
 		bool operator ==(const Tensor & other) const;
     	bool operator !=(const Tensor & other) const;
-    	
+
 		int ndim(int &ndim) const{
 			ndim = shape.size();
+			return ndim;
 		}
     	void setShape(std::vector<int> s);
     	vector<int> getShape() const;
 		void print() const;
-    	
+
 		void *getData() const;
     	int getSize(int & size) const;
     	int setData(void * data_in);
-		
-		
+
+
 		int setConsumers(vector<OpNode> ops){ return 0;}
-	
+
 		int getConsumers(vector<OpNode> &ops){ return 0;}
 		int getConsumersNum()
 		{
@@ -95,26 +95,26 @@ class Tensor{
 
 		int getDataType(){ return data_type; }
         operation* op;
-	
+
 		//type: CONST, PLACEHOLDER
 		enum TENSOR_TYPE tensor_type;
-		
+
 		int fillTensor(Tensor &t, vector<int> shape, void *data,
 						bool random);
 
 		std::vector<int> shape{0};
     private:
-		//Tensor shape 
+		//Tensor shape
 		//data type  0:int8,  1:float16
 		int data_type;
 		//the operation produce this Tensor
 		OpNode* producer;
 		//the output index  from source operation
 		int value_index{0};
-		//ops who use this tensor 
-		vector<OpNode> consumers;	
+		//ops who use this tensor
+		vector<OpNode> consumers;
 		// tensor <<===>> mem_record
-		struct mem_record * mr; 
+		struct mem_record * mr;
 		void* __data;
 };
 
@@ -126,9 +126,9 @@ inline int fillTensorPtr(Tensor *t, vector<int> shape, void * value)
 	{
 		size *= shape[i];
 	}
-	DLOG(INFO)<<"size1 = "<<size;
+	//DLOG(INFO)<<"size1 = "<<size;
 	data = (char*)malloc(size);
-	
+
 	for(int i = 0; i < shape[0]; i++)
 	{
 		for(int j = 0; j < shape[1]; j++)

@@ -6,6 +6,7 @@
 *   @description：
 *
 *================================================================*/
+#pragma once
 #ifndef _MATH_OP_H
 #define _MATH_OP_H
 
@@ -19,12 +20,31 @@ namespace base{
 class LogOpNode : public OpNode{
     public:
         LogOpNode(){}
-        LogOpNode(int id = LOG_OPNODE_ID, const std::string name = "")
+        LogOpNode(vector<vector<int> > shape,
+					int id = LOG_OPNODE_ID, const std::string name = "")
         : OpNode{id, name}
         {
+			this->shape = shape;
             this->id = id;
             this->name = name;
         }
+
+		vector<vector<int> > infer_shape()
+		{
+			return shape;
+		}
+
+		vector< vector<int>> getInputShape()
+		{
+			return shape;
+		}
+
+		bool isUseConstTensor()
+		{
+			return false;
+		}
+
+		vector<vector<int> > shape;
     private :
         int id;
         std::string name;
@@ -33,12 +53,31 @@ class LogOpNode : public OpNode{
 class AbsOpNode : public OpNode{
     public:
         AbsOpNode(){}
-        AbsOpNode(int id = ABS_OPNODE_ID, const std::string name = "")
+        AbsOpNode(vector<vector<int> > shape,
+					int id = ABS_OPNODE_ID, const std::string name = "")
         : OpNode{id, name}
         {
+			this->shape = shape;
             this->id = id;
             this->name = name;
         }
+
+		vector<vector<int> > infer_shape()
+		{
+			return shape;
+		}
+
+		vector< vector<int>> getInputShape()
+		{
+			return shape;
+		}
+
+		bool isUseConstTensor()
+		{
+			return false;
+		}
+
+		vector<vector<int> > shape;
     private :
         int id;
         std::string name;
@@ -57,15 +96,31 @@ class AddOpNode : public OpNode{
             this->name = name;
 			this->shape = shape;
         }
+
+		vector<vector<int> > infer_shape()
+		{
+			return shape;
+		}
+
+		vector< vector<int>> getInputShape()
+		{
+			return shape;
+		}
+
+		bool isUseConstTensor()
+		{
+			return false;
+		}
+
+		vector<vector<int> > shape;
     private :
         int id;
-		vector<vector<int> > shape;
         std::string name;
 };
 
 
 
-} //namespace math
+} //namespace base
 } //namespace witin
 
 

@@ -1,7 +1,7 @@
 /*************************************************************************
 	> File Name: core.h
 	> Author: afly
-	> Mail: aifei.zhang@witintech.com 
+	> Mail: aifei.zhang@witintech.com
 	> Created Time: Wed Aug 26 19:39:47 2020
  ************************************************************************/
 #pragma once
@@ -31,12 +31,22 @@ typedef struct weight_params{
 	int start;
 	int end;
 	int size;
+	weight_params(){
+		start=0;
+		end=0;
+		size=0;
+	}
 }WEIGHT_PARAMS;
 
 typedef struct bias_params{
 	int start;
 	int end;
 	int size;
+	bias_params(){
+		start=0;
+		end=0;
+		size=0;
+	}
 }BIAS_PARAMS;
 
 //array grp
@@ -44,18 +54,33 @@ typedef struct Array_Grp{
 	int w_win_column_s;
 	int w_win_column_e;
 	int w_win_column_len;
-	
+
 	int w_win_row_s;
 	int w_win_row_e;
 	int w_win_row_len;
-	
+
 	int store_addr;
 	int store_len;
 
 	int regfile_addr_start;
 	int regfile_addr_len;
 	WEIGHT_PARAMS w_prams;
-	
+
+	Array_Grp(){
+		w_win_column_s=0;
+		w_win_column_e=0;
+		w_win_column_len=0;
+
+		w_win_row_s=0;
+		w_win_row_e=0;
+		w_win_row_len=0;
+
+		store_addr=0;
+		store_len=0;
+		regfile_addr_start=0;
+		regfile_addr_len=0;
+	}
+
 } ARRAY_GRP_CONFIG;
 
 
@@ -104,7 +129,7 @@ typedef struct Mul_Grp{
 
 
 //read tv
-typedef struct Readtv_Grp{
+typedef struct Reactv_Grp{
 	//source addr
 	int reactv_fetch_addr;
 	//target addr
@@ -114,13 +139,29 @@ typedef struct Readtv_Grp{
 	//000 bypass 001 sigmoid 010 tanh 011 relu
 	int reactv_sel;
 	int rsv;
+	Reactv_Grp(){
+		reactv_fetch_addr=0;
+		reactv_store_addr=0;
+		reactv_store_length=0;
+		reactv_sel=0;
+	}
 
-}READTV_GRP_CONFIG;
+}REACTV_GRP_CONFIG;
 
-//max pooling 
+inline void dump_reactv_grp_cfg(REACTV_GRP_CONFIG rgc)
+{
+	DLOG(INFO)<<"----------react_grp_cfg----------";
+	DLOG(INFO)<<"rgc.reactv_fetch_addr : \t"<< rgc.reactv_fetch_addr;
+	DLOG(INFO)<<"rgc.reactv_store_addr : \t"<< rgc.reactv_store_addr;
+	DLOG(INFO)<<"rgc.reactv_store_length : \t"<< rgc.reactv_store_length;
+	DLOG(INFO)<<"rgc.reactv_sel : \t"<< rgc.reactv_sel;
+}
+
+
+//max pooling
 typedef struct Max_Pooling{
 	//the read start address of regfile
-	int rsource ;	
+	int rsource ;
 	//the write start address of regfile for max matrix
 	//when TDNN mode, it is the start addrss of the TDNN block
 	int rdes;
@@ -132,7 +173,7 @@ typedef struct Max_Pooling{
 	//strides in x and y direction
 	int stridex;
 	int stridey;
-    
+
 	//dont know
 	int winx;
 	//reserved
@@ -143,13 +184,14 @@ typedef struct Actv_Config{
 	string actv_type;
 	int addr;
 	int limit;
-}ACTV_GRP_CONFIG; 
+}ACTV_GRP_CONFIG;
 
-//??? what?
+//add --> radd
 typedef struct Read_Der{
 	//left and right start of regfile
 	int readdrl_addr;
 	int readdrr_addr;
+	vector<int> add_addr;
 
 	int readder_length;
 
@@ -158,13 +200,24 @@ typedef struct Read_Der{
 	int rsv;
 }READDER_CONFIG;
 
+
+inline void dump_readder_grp_cfg(READDER_CONFIG rc)
+{
+	DLOG(INFO)<<"----------readdr_grp_cfg----------";
+	DLOG(INFO)<<"rc.add_addr size:"<<rc.add_addr.size();
+	DLOG(INFO)<<"rc.readdrl_addr : \t"<< rc.add_addr[0];
+	DLOG(INFO)<<"rc.readdrr_addr : \t"<< rc.add_addr[1];
+	DLOG(INFO)<<"rc.readder_length : \t"<< rc.readder_length;
+	DLOG(INFO)<<"rc.readder_store : \t"<< rc.readder_store;
+}
+
 //spi to dacfifo
 typedef struct Dacfifo_Grp0{
 	//start addrss of array-row for spi to dacfifo
 	int ys00;
 	//end
 	int ye00;
-	
+
 	//cmmon address pointer registers
 	int rs_cmn_addr_pt;
 	int rs_length;
@@ -175,11 +228,11 @@ typedef struct Dacfifo_Grp0{
 
 // regfile to dacfifo
 typedef struct Dacfifo_Grp1{
-	//start and end address of array-row for 
+	//start and end address of array-row for
 	//the first layer regfile to dacfifo
 	int ys01;
 	int ye01;
-	//start and end , the meaning is differenct 
+	//start and end , the meaning is differenct
 	//depend on tdnn_en an y01_sw_en
 	int rs;
 	int re;
@@ -189,7 +242,7 @@ typedef struct Dacfifo_Grp1{
 
 //dacfifo  start and end address for arry calculation
 typedef struct Dacfifo_Grp2{
-	//start and end address of DACFIFO for 
+	//start and end address of DACFIFO for
 	//array calculation
 	int ys_round;
 	int ye_round;
@@ -212,10 +265,10 @@ typedef struct roundControlS{
 	bool fifo_grp0_en;
 	bool fifo_grp1_en;
 	bool fifo_grp2_en;
-	
+
 	//whether paused when the cur round done
 	bool round_pause;
-	
+
 	//default
 	roundControlS(){
 		cnt = 0;
@@ -259,7 +312,7 @@ typedef struct RoundControl{
 	ARRAY_GRP_CONFIG	 array_grp_config;
 	MUL_GRP_CONFIG		 mul_grp_config;
 	ACTV_GRP_CONFIG		 actv_grp_config;
-	READTV_GRP_CONFIG	 readtv_grp_config;
+	REACTV_GRP_CONFIG	 reactv_grp_config;
 	MAX_POOLING_CONFIG	 max_pooling_config;
 	READDER_CONFIG		 readder_config;
 	DACFIFO_GRP0_CONFIG	 dacfifo_grp0_config;
@@ -274,24 +327,24 @@ typedef struct RoundControl{
 // */
 //class RoundConfig{
 //	public:
-//		RoundConfig(){}	
+//		RoundConfig(){}
 //		RoundConfig(ROUND_CONTROL rc)
 //		{
 //			roundControl = rc;
 //		}
-//		
+//
 //		int getRoundControl(ROUND_CONTROL rc);
 //		int dump(){
-//			//dump all round config in this function		
+//			//dump all round config in this function
 //		}
-//	
+//
 //	private:
 //		ROUND_CONTROL roundControl;
-//	
+//
 //};
 
 /*
- * single core 
+ * single core
  *
  */
 
@@ -304,36 +357,36 @@ class Core{
 			rounds = rc;
 			RoundTotal = roundTotal;
 		}
-		
+
 		int setRoundTotal(int t)
 		{
 			RoundTotal = t;
-		}	
+		}
 		int getRoundTotal(int &t){
-			
+
 			t = RoundTotal;
 			return 0;
-		}	
-		
+		}
+
 		int getRoundConfig(ROUND_CONFIG rc);
-		
+
 		int dump(){
 			int t;
 			getRoundTotal(t);
 			DLOG(INFO)<<"RoundTotal:"<<t;
 		}
-		
+
 	private:
 		//ROUND_CONFIG
 		std::vector<ROUND_CONFIG> rounds;
 		int RoundTotal = 0;
-		
+
 		//Mem resource
-		
+
 };
 
 /*
- * four core 
+ * four core
  *
  */
 
