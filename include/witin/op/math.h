@@ -118,6 +118,77 @@ class AddOpNode : public OpNode{
         std::string name;
 };
 
+class ScalarMulOpNode : public OpNode{
+    public:
+        ScalarMulOpNode(){}
+        ScalarMulOpNode(vector<vector<int> >shape,
+					int data,
+					int id = SCALAR_MUL_OPNODE_ID,
+					const std::string name = "")
+        : OpNode{id, name}
+        {
+			this->data = data;
+            this->id = id;
+            this->name = name;
+			this->shape = shape;
+        }
+
+		vector<vector<int> > infer_shape()
+		{
+			return shape;
+		}
+
+		vector< vector<int>> getInputShape()
+		{
+			return shape;
+		}
+
+		bool isUseConstTensor()
+		{
+			return false;
+		}
+
+		vector<vector<int> > shape;
+		int data;
+    private :
+        int id;
+        std::string name;
+};
+
+class ElemwiseMulOpNode : public OpNode{
+    public:
+        ElemwiseMulOpNode(){}
+        ElemwiseMulOpNode(vector<vector<int> >shape,
+					int id = ELEMWISE_MUL_OPNODE_ID,
+					const std::string name = "")
+        : OpNode{id, name}
+        {
+            this->id = id;
+            this->name = name;
+			this->shape = shape;
+        }
+
+		vector<vector<int> > infer_shape()
+		{
+			return shape;
+		}
+
+		vector< vector<int>> getInputShape()
+		{
+			return shape;
+		}
+
+		bool isUseConstTensor()
+		{
+			return false;
+		}
+
+		vector<vector<int> > shape;
+    private :
+        int id;
+        std::string name;
+};
+
 
 
 } //namespace base

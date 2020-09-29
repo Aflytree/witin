@@ -278,9 +278,9 @@ namespace base{
 
 				for(auto kk : tmp_tensors)
 				{
-					//DLOG(INFO)<<": "<<node->getName();
-					//DLOG(INFO)<<"output_tensor :";
-					//kk->print();
+					DLOG(INFO)<<": "<<node->getName();
+					DLOG(INFO)<<"output_tensor :";
+					kk->print();
 				}
 #endif
 			}
@@ -354,6 +354,7 @@ namespace base{
 				ACTV_GRP_CONFIG actv_grp_cfg;
 				READDER_CONFIG readder_cfg;
 				REACTV_GRP_CONFIG reactv_grp_cfg;
+				MUL_GRP_CONFIG mul_grp_cfg;
 
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
@@ -395,12 +396,16 @@ namespace base{
 				}
 				else if(node->getID() == ACT_OPNODE_ID)
 				{
+					rce.reactive_en=true;
 					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
 					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
-					rce.reactive_en=true;
 				}
-
-				else{
+				else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+				{
+					rce.mult_en = true;
+				}
+				else
+				{
 					LOG(FATAL)<<"Do not support opnode ID :"<<node_id;
 				}
 				DLOG(INFO)<<"weight_en:"<<rce.weight_en;
@@ -444,16 +449,19 @@ namespace base{
 							}
 							else if(node->getID() == ADD_OPNODE_ID)
 							{
-								rce.readdr_en=true;
 								readder_cfg.add_addr.push_back(mr.start);
 								readder_cfg.readder_length = mr.len;
 							}
 							else if(node->getID() == ABS_OPNODE_ID){}
 							else if(node->getID() == ACT_OPNODE_ID)
 							{
-								rce.reactive_en=true;
 								reactv_grp_cfg.reactv_fetch_addr = mr.start;
 								reactv_grp_cfg.reactv_store_length = mr.len;
+							}
+							else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+							{
+								mul_grp_cfg.in_addrs.push_back(mr.start);
+								mul_grp_cfg.mul_length = mr.len;
 							}
 							else{
 								DLOG(INFO)<<"Do not support opnode ID";
@@ -575,6 +583,10 @@ namespace base{
 							{
 								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
 							}
+							else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+							{
+								mul_grp_cfg.pstore_addr=start_alloc_addr;
+							}
 							else
 							{
 								LOG(FATAL)<<"Unsupport opnode id";
@@ -594,6 +606,7 @@ namespace base{
 				dump_arry_grp_cfg(arry_grp_cfg);
 				dump_readder_grp_cfg(readder_cfg);
 				dump_reactv_grp_cfg(reactv_grp_cfg);
+				dump_mul_grp_cfg(mul_grp_cfg);
 #endif
 				round_cfg_in.rd_control_enable = rce;
 				round_cfg_in.array_grp_config = arry_grp_cfg;
@@ -614,6 +627,7 @@ namespace base{
 				ACTV_GRP_CONFIG actv_grp_cfg;
 				READDER_CONFIG readder_cfg;
 				REACTV_GRP_CONFIG reactv_grp_cfg;
+				MUL_GRP_CONFIG mul_grp_cfg;
 
 				baseOpNodePtr node = op_list[i];
 
@@ -641,13 +655,22 @@ namespace base{
 				{
 					rce.readdr_en=true;
 				}
+				else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+				{
+					rce.mult_en=true;
+				}
 				else if(node->getID() == ACT_OPNODE_ID)
 				{
+					rce.reactive_en=true;
 					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
 					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
-					rce.reactive_en=true;
 				}
-				else{
+				else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+				{
+					rce.mult_en = true;
+				}
+				else
+				{
 					LOG(FATAL)<<"Do not support opnode ID";
 				}
 
@@ -687,6 +710,12 @@ namespace base{
 							struct mem_record mr = iter->second;
 							reactv_grp_cfg.reactv_fetch_addr = mr.start;
 							reactv_grp_cfg.reactv_store_length = mr.len;
+						}
+						else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+						{
+							struct mem_record mr = iter->second;
+							mul_grp_cfg.in_addrs.push_back(mr.start);
+							mul_grp_cfg.mul_length = mr.len;
 						}
 						else{
 							LOG(FATAL)<<"Do not support opnode ID";
@@ -797,11 +826,14 @@ namespace base{
 							{
 								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
 							}
+							else if(node->getID() == ELEMWISE_MUL_OPNODE_ID)
+							{
+								mul_grp_cfg.pstore_addr=start_alloc_addr;
+							}
 							else
 							{
 								LOG(FATAL)<<"Unsupport opnode id";
 							}
-
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 																	(norm_output_tensors[m], mr));
@@ -822,6 +854,7 @@ namespace base{
 				dump_arry_grp_cfg(arry_grp_cfg);
 				dump_readder_grp_cfg(readder_cfg);
 				dump_reactv_grp_cfg(reactv_grp_cfg);
+				dump_mul_grp_cfg(mul_grp_cfg);
 #endif
 				round_cfg_norm.rd_control_enable = rce;
 				round_cfg_norm.array_grp_config = arry_grp_cfg;

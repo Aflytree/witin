@@ -118,6 +118,7 @@ typedef struct Mul_Grp{
 	//source
 	int m0_addr;
 	int m1_addr;
+	vector<int> in_addrs;
 	//store
 	int pstore_addr;
     //length
@@ -125,8 +126,27 @@ typedef struct Mul_Grp{
 	//???
 	int mul_sht;
 	int rsv;
+	Mul_Grp(){
+		m0_addr=0;
+		m1_addr=0;
+		pstore_addr=0;
+		mul_length=0;
+		mul_sht=0;
+	}
 }MUL_GRP_CONFIG;
 
+inline void dump_mul_grp_cfg(MUL_GRP_CONFIG mgc)
+{
+	DLOG(INFO)<<"----------mul_grp_cfg----------";
+	if(mgc.in_addrs.size() != 0)
+	{
+		DLOG(INFO)<<"mgc.m0_addr : \t"<< mgc.in_addrs[0];
+		DLOG(INFO)<<"mgc.m1_addr : \t"<< mgc.in_addrs[1];
+	}
+	DLOG(INFO)<<"mgc.pstore_addr : \t"<< mgc.pstore_addr;
+	DLOG(INFO)<<"mgc.mul_length : \t"<< mgc.mul_length;
+	DLOG(INFO)<<"mgc.mul_sht : \t"<< mgc.mul_sht;
+}
 
 //read tv
 typedef struct Reactv_Grp{
@@ -184,6 +204,11 @@ typedef struct Actv_Config{
 	string actv_type;
 	int addr;
 	int limit;
+	Actv_Config(){
+		actv_type="relu";
+		addr=0;
+		limit=127;
+	}
 }ACTV_GRP_CONFIG;
 
 //add --> radd
@@ -279,7 +304,6 @@ typedef struct roundControlS{
 	//whether paused when the cur round done
 	bool round_pause;
 
-	//default
 	roundControlS(){
 		cnt = 0;
 		weight_en = false;
