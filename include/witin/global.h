@@ -49,6 +49,7 @@ enum OTHER_OPNODE_ID{
 	CONST_NODE_ID=100
 };
 
-#define WITIN_DEBUG 
+#define WITIN_DEBUG
+#define TIME_PROF
 
 #endif

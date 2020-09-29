@@ -345,9 +345,9 @@ namespace base{
 			if(isInputNode(op_list[i], in_nodes))
 			{
 				DLOG(INFO)<<"[INPUT] node:"<<op_list[i]->getName();
+
 				RD_CONTROL_ENABLE rce;
 				rce.cnt = i;
-
 				ROUND_CONFIG round_cfg_in;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
 				WEIGHT_PARAMS weight_params;
@@ -355,13 +355,13 @@ namespace base{
 				READDER_CONFIG readder_cfg;
 				REACTV_GRP_CONFIG reactv_grp_cfg;
 
-				dump_arry_grp_cfg(arry_grp_cfg);
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
 
 				int node_id = node->getID();
 				if(node_id == MV_OPNODE_ID)
 				{
+					rce.weight_en = true;
 					mvOpNodePtr mv_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
 					if(mv_ptr == NULL)
 					{
@@ -389,22 +389,21 @@ namespace base{
 				else if(node_id == MIN_OPNODE_ID){}
 				else if(node_id == INVERT_OPNODE_ID){}
 				else if(node_id == SHIFT_OPNODE_ID){}
-				else if(node_id == ADD_OPNODE_ID){}
+				else if(node_id == ADD_OPNODE_ID)
+				{
+					rce.readdr_en=true;
+				}
 				else if(node->getID() == ACT_OPNODE_ID)
 				{
 					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
 					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
+					rce.reactive_en=true;
 				}
 
 				else{
 					LOG(FATAL)<<"Do not support opnode ID :"<<node_id;
 				}
-
-				if(node_id != MV_OPNODE_ID)
-					rce.weight_en = false;
-				else
-					rce.weight_en = true;
-
+				DLOG(INFO)<<"weight_en:"<<rce.weight_en;
 				//getShape
 				vector<vector<int> > input_shape = node->getInputShape();
 				vector<Tensor*> input_tensors;
@@ -445,15 +444,14 @@ namespace base{
 							}
 							else if(node->getID() == ADD_OPNODE_ID)
 							{
+								rce.readdr_en=true;
 								readder_cfg.add_addr.push_back(mr.start);
 								readder_cfg.readder_length = mr.len;
 							}
-							else if(node->getID() == ABS_OPNODE_ID)
-							{
-
-							}
+							else if(node->getID() == ABS_OPNODE_ID){}
 							else if(node->getID() == ACT_OPNODE_ID)
 							{
+								rce.reactive_en=true;
 								reactv_grp_cfg.reactv_fetch_addr = mr.start;
 								reactv_grp_cfg.reactv_store_length = mr.len;
 							}
@@ -516,8 +514,10 @@ namespace base{
 							}
 						}
 						endTime = clock();
-						std::cout<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s"<<std::endl;
 
+#ifdef TIME_PROF
+						std::cout<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s"<<std::endl;
+#endif
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;
 						weight_params.size = column_size * row_size;
@@ -533,7 +533,7 @@ namespace base{
 				vector<Tensor*> output_tensors;
 				node->get_output_tensors(output_tensors);
 
-				DLOG(INFO)<<": [INPUTNODE] out_tensors total : "<<output_tensors.size();
+				DLOG(INFO)<<"[INPUTNODE] out_tensors total : "<<output_tensors.size();
 				for(int k = 0; k < output_tensors.size();k++)
 				{
 					if(output_tensors[k]->tensor_type == PLACEHOLDER_TYPE)
@@ -560,7 +560,8 @@ namespace base{
 							mr.start = start_alloc_addr;
 							mr.len = tensor_shape[1];
 
-							if(node->getID() == MV_OPNODE_ID){
+							if(node->getID() == MV_OPNODE_ID)
+							{
 								arry_grp_cfg.store_addr = start_alloc_addr;
 								arry_grp_cfg.store_len = tensor_shape[1];
 							}
@@ -568,14 +569,8 @@ namespace base{
 							{
 								readder_cfg.readder_store = start_alloc_addr;
 							}
-							else if(node->getID() == ABS_OPNODE_ID)
-							{
-
-							}
-							else if(node->getID() == EXP_OPNODE_ID)
-							{
-
-							}
+							else if(node->getID() == ABS_OPNODE_ID){}
+							else if(node->getID() == EXP_OPNODE_ID){}
 							else if(node->getID() == ACT_OPNODE_ID)
 							{
 								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
@@ -586,7 +581,7 @@ namespace base{
 							}
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
-															(output_tensors[k], mr));
+																		(output_tensors[k], mr));
 						}
 						else
 						{
@@ -602,6 +597,7 @@ namespace base{
 #endif
 				round_cfg_in.rd_control_enable = rce;
 				round_cfg_in.array_grp_config = arry_grp_cfg;
+				round_cfg_in.readder_config = readder_cfg;
 				round_cfg_in.actv_grp_config = actv_grp_cfg;
 
 				rounds.push_back(round_cfg_in);
@@ -611,7 +607,6 @@ namespace base{
 				DLOG(INFO)<<"[NORMAL] node:"<<op_list[i]->getName();
 				RD_CONTROL_ENABLE rce;
 				rce.cnt = i;
-				rce.weight_en = true;
 
 				ROUND_CONFIG round_cfg_norm;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
@@ -624,6 +619,7 @@ namespace base{
 
 				if(node->getID() == MV_OPNODE_ID)
 				{
+					rce.weight_en = true;
 					mvOpNodePtr mv_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
 					if(mv_ptr == NULL)
 					{
@@ -641,10 +637,18 @@ namespace base{
 						rce.actv_en = false;
 					}
 				}
+				else if(node->getID() == ADD_OPNODE_ID)
+				{
+					rce.readdr_en=true;
+				}
 				else if(node->getID() == ACT_OPNODE_ID)
 				{
 					actOpNodePtr act_ptr = std::dynamic_pointer_cast<ActOpNode>(node);
 					reactv_grp_cfg.reactv_sel = act_ptr->act_type;
+					rce.reactive_en=true;
+				}
+				else{
+					LOG(FATAL)<<"Do not support opnode ID";
 				}
 
 				vector<Tensor*> input_tensors;
@@ -676,12 +680,8 @@ namespace base{
 							struct mem_record mr = iter->second;
 							readder_cfg.add_addr.push_back(mr.start);
 							readder_cfg.readder_length = mr.len;
-
 						}
-						else if(node->getID() == ABS_OPNODE_ID)
-						{
-
-						}
+						else if(node->getID() == ABS_OPNODE_ID){}
 						else if(node->getID() == ACT_OPNODE_ID)
 						{
 							struct mem_record mr = iter->second;
@@ -689,12 +689,12 @@ namespace base{
 							reactv_grp_cfg.reactv_store_length = mr.len;
 						}
 						else{
-							DLOG(INFO)<<"Do not support opnode ID";
+							LOG(FATAL)<<"Do not support opnode ID";
 						}
 					}
 					else
 					{
-						DLOG(INFO)<<"could not find tensor in tensor_mem_record_map, maybe const tensor";
+						DLOG(WARNING)<<"could not find tensor in tensor_mem_record_map, maybe const tensor";
 					}
 
 					//  allocate mem for const Tensor if not none, : array mem
@@ -737,8 +737,9 @@ namespace base{
 							}
 						}
 						endTime = clock();
+#ifdef TIME_PROF
 						DLOG(INFO)<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s";
-
+#endif
 						//row
 						weight_params.start = file_offset;
 						weight_params.end = file_offset + column_size * row_size - 1;
@@ -790,14 +791,8 @@ namespace base{
 							{
 								readder_cfg.readder_store = start_alloc_addr;
 							}
-							else if(node->getID() == ABS_OPNODE_ID)
-							{
-
-							}
-							else if(node->getID() == EXP_OPNODE_ID)
-							{
-
-							}
+							else if(node->getID() == ABS_OPNODE_ID){}
+							else if(node->getID() == EXP_OPNODE_ID){}
 							else if(node->getID() == ACT_OPNODE_ID)
 							{
 								reactv_grp_cfg.reactv_store_addr=start_alloc_addr;
@@ -809,7 +804,7 @@ namespace base{
 
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
-															(norm_output_tensors[m], mr));
+																	(norm_output_tensors[m], mr));
 						}
 						else
 						{
@@ -830,7 +825,8 @@ namespace base{
 #endif
 				round_cfg_norm.rd_control_enable = rce;
 				round_cfg_norm.array_grp_config = arry_grp_cfg;
-				round_cfg_norm.actv_grp_config = actv_grp_cfg;
+				round_cfg_norm.readder_config = readder_cfg;
+				round_cfg_norm.reactv_grp_config = reactv_grp_cfg;
 
 				rounds.push_back(round_cfg_norm);
 			}

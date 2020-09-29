@@ -198,6 +198,13 @@ typedef struct Read_Der{
 	//store start address
 	int readder_store;
 	int rsv;
+	Read_Der(){
+		readdrl_addr=0;
+		readdrr_addr=0;
+		//TODO:add_addr
+		readder_length=0;
+		readder_store=0;
+	}
 }READDER_CONFIG;
 
 
@@ -205,8 +212,11 @@ inline void dump_readder_grp_cfg(READDER_CONFIG rc)
 {
 	DLOG(INFO)<<"----------readdr_grp_cfg----------";
 	DLOG(INFO)<<"rc.add_addr size:"<<rc.add_addr.size();
-	DLOG(INFO)<<"rc.readdrl_addr : \t"<< rc.add_addr[0];
-	DLOG(INFO)<<"rc.readdrr_addr : \t"<< rc.add_addr[1];
+	if(0 != rc.add_addr.size())
+	{
+		DLOG(INFO)<<"rc.readdrl_addr : \t"<< rc.add_addr[0];
+		DLOG(INFO)<<"rc.readdrr_addr : \t"<< rc.add_addr[1];
+	}
 	DLOG(INFO)<<"rc.readder_length : \t"<< rc.readder_length;
 	DLOG(INFO)<<"rc.readder_store : \t"<< rc.readder_store;
 }
@@ -272,7 +282,7 @@ typedef struct roundControlS{
 	//default
 	roundControlS(){
 		cnt = 0;
-		weight_en = true;
+		weight_en = false;
 		bias_en  = false;
 		shift_en = false;
 		add_en = false;
@@ -298,6 +308,8 @@ inline void dump_rd_ctrl_enable(RD_CONTROL_ENABLE rce)
 	DLOG(INFO)<<"rce.shift_en : \t"<< rce.shift_en;
 	DLOG(INFO)<<"rce.add_en : \t"<< rce.add_en;
 	DLOG(INFO)<<"rce.actv_en : \t"<< rce.actv_en;
+	DLOG(INFO)<<"rce.max_pooling_en : \t"<< rce.max_pooling_en;
+	DLOG(INFO)<<"rce.reactive_en : \t"<< rce.reactive_en;
 	DLOG(INFO)<<"rce.mult_en : \t"<< rce.mult_en;
 	DLOG(INFO)<<"rce.readdr_en : \t"<< rce.readdr_en;
 	DLOG(INFO)<<"rce.TDNN_en : \t"<< rce.TDNN_en;
