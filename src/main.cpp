@@ -63,8 +63,9 @@ int main(int argc, char *argv[])
           << BOOST_VERSION / 100 % 1000
           << "."
           << BOOST_VERSION % 100;
-    //auto absNode1 = std::make_shared<AbsOpNode>(1,"abs");
 
+    DLOG(INFO) << "JSONCPP version: "  //1.9.3
+          << JSONCPP_VERSION_STRING;
 	Tensor *mv_tensor1 = (Tensor * )malloc(sizeof(Tensor));
 	Tensor *mv_tensor2 = (Tensor * )malloc(sizeof(Tensor));
 	Tensor *mv_tensor3 = (Tensor * )malloc(sizeof(Tensor));
