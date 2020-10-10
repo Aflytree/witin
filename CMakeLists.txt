@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_C_COMPILER "/usr/bin/gcc")
 set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 project (witin_excu)
+project(Installation VERSION 0.1)
 
 
 file(GLOB SOURCES "src/node/*.cpp"
@@ -81,3 +82,29 @@ target_link_libraries(witin jsoncpp)
 #SET_TARGET_PROPERTIES(witin PROPERTIES VERSION 1.0 SOVERSION 1)
 
 #add_subdirectory(tests)
+
+install(TARGETS witin
+		EXPORT WitinTargets
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		PUBLIC_HEADER DESTINATION include
+		)
+#declare version info
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+		WitinConfigVersion.cmake
+		VERSION ${PACKAGE_VERSION}
+		COMPATIBILITY AnyNewerVersion
+		)
+#write WitinTargets info to WitinLibTargets.cmake
+install(EXPORT WitinTargets
+		FILE WitinLibTargets.cmake
+		DESTINATION lib/cmake/WintinLib
+		)
+
+configure_file(./cmake/witinConfig.cmake.in witinConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/witinConfig.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/WitinVersion.cmake"
+		DESTINATION lib/cmake/
+		)
+
