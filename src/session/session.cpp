@@ -16,6 +16,9 @@
 #include "../../include/witin/op/active.h"
 #include <witin/op/math.h>
 #include <witin/utils/debug.h>
+#include <python3.6m/Python.h>
+// #include "/usr/include/python3.6m/Python.h"
+// #include <Python.h>
 
 using namespace witin::base;
 
@@ -64,6 +67,7 @@ namespace base{
 			round_cfg["fifo_grp1_en"] = rc[i].rd_control_enable.fifo_grp1_en;
 			round_cfg["fifo_grp2_en"] = rc[i].rd_control_enable.fifo_grp2_en;
 			round_cfg["round_pause"] =  rc[i].rd_control_enable.round_pause;
+			round_cfg["gain"] =  512;
 
 			Json::Value weight;
 			weight["w_win_column_s"] = rc[i].array_grp_config.w_win_column_s;
@@ -199,6 +203,105 @@ namespace base{
 		fclose(data);
 		return 0;
 	}
+
+	/*
+	 * generate  array map
+	 */
+
+	int generateArrayMap(const char* json_path, const char* params_path)
+	{
+		PyObject *pName, *pModule, *pDict, *pFunc;
+		PyObject *pArgs, *pValue;
+
+		Py_Initialize();
+		DLOG(INFO)<<"debug point";
+		DLOG(INFO)<<"debug point";
+		PyRun_SimpleString("print('hello world')");
+		PyRun_SimpleString("import sys");
+		DLOG(INFO)<<"debug point";
+
+		// PyRun_SimpleString("sys.path.append('./')");
+		char const* pyScriptName = "get_array_map";
+		char const* arrayJson = "./array.json";
+		char const* mapTxt = "./map.txt";
+		char const* logFile = "./log.txt";
+		DLOG(INFO)<<"debug point";
+
+		pName = PyUnicode_DecodeFSDefault(pyScriptName);
+
+		pModule = PyImport_Import(pName);
+		Py_DECREF(pName);
+		DLOG(INFO)<<"debug point";
+
+		if(pModule != NULL)
+        {
+            pFunc = PyObject_GetAttrString(pModule, "get_array_map");
+            /* pFunc is a new reference */
+
+            if (pFunc && PyCallable_Check(pFunc))
+            {
+                pArgs = PyTuple_New(4);
+				DLOG(INFO)<<"debug point";
+
+				PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", arrayJson));
+				PyTuple_SetItem(pArgs, 1, Py_BuildValue("s", json_path));
+				PyTuple_SetItem(pArgs, 2, Py_BuildValue("s", mapTxt));
+				PyTuple_SetItem(pArgs, 3, Py_BuildValue("s", logFile));
+                pValue = PyObject_CallObject(pFunc, pArgs);
+                Py_DECREF(pArgs);
+                if (pValue != NULL)
+                {
+					DLOG(INFO)<<"Result of call: "<<PyLong_AsLong(pValue);
+                    Py_DECREF(pValue);
+                }
+                else
+                {
+                    Py_DECREF(pFunc);
+                    Py_DECREF(pModule);
+                    PyErr_Print();
+					LOG(FATAL)<<"Call failed";
+                    return 1;
+                }
+            }
+            else
+            {
+                if (PyErr_Occurred())
+                    PyErr_Print();
+				LOG(FATAL)<<"Cannot find function";
+            }
+            Py_XDECREF(pFunc);
+            Py_DECREF(pModule);
+        }
+        else
+        {
+            PyErr_Print();
+			LOG(FATAL)<<"Failed to load ";
+            return 1;
+        }
+		return 0;
+	}
+
+	/*
+	 * generate chip register config
+	 */
+	int generateRegConfig(const char* json_path, const char* params_path)
+	{
+		// PyObject *pName, *pModule, *pDict, *pFunc;
+		// PyObject *pArgs, *pValue;
+
+
+		// Py_Initialize();
+
+		// PyRun_SimpleString("import sys");
+		// PyRun_SimpleString("sys.path.append('./')");
+
+		// // pName = PyUnicode_DecodeFSDefault("get_array_map");
+		// pName = PyUnicode_FromString("get_array_map");
+
+		// pModule = PyImport_Import(pName);
+		return 0;
+	}
+
 
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
 	{
@@ -499,10 +602,12 @@ namespace base{
 						tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
 														(input_tensors[j], mr));
 						arry_grp_cfg.w_win_column_s = start_alloc_column_addr;
-						arry_grp_cfg.w_win_column_e = start_alloc_column_addr + column_size;
+						arry_grp_cfg.w_win_column_e = start_alloc_column_addr + column_size - 1;
+						DLOG(INFO)<<"	w_win_column_e:"<<start_alloc_column_addr + column_size - 1;
+
 						arry_grp_cfg.w_win_column_len = column_size;
 						arry_grp_cfg.w_win_row_s = start_alloc_row_addr;
-						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
+						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size - 1;
 						arry_grp_cfg.w_win_row_len = row_size;
 
 						//manager file params.dat
@@ -747,10 +852,12 @@ namespace base{
 						mr.row_len = row_size;
 
 						arry_grp_cfg.w_win_column_s = start_alloc_column_addr;
-						arry_grp_cfg.w_win_column_e = start_alloc_column_addr + column_size;
+						arry_grp_cfg.w_win_column_e = start_alloc_column_addr + column_size - 1;
+						DLOG(INFO)<<"	w_win_column_e:"<<start_alloc_column_addr + column_size - 1;
+
 						arry_grp_cfg.w_win_column_len = column_size;
 						arry_grp_cfg.w_win_row_s = start_alloc_row_addr;
-						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size;
+						arry_grp_cfg.w_win_row_e = start_alloc_row_addr + row_size - 1;
 						arry_grp_cfg.w_win_row_len = row_size;
 						clock_t startTime, endTime;
 						startTime = clock();
@@ -866,7 +973,10 @@ namespace base{
 		}
 
 		fclose(stream);
-		writeToJson(rounds, params_path, "./BoardConfig.json");
+		string boardConfigJsonPath = "./BoardConfig.json";
+		writeToJson(rounds, params_path, boardConfigJsonPath);
+		// generateRegConfig(boardConfigJsonPath.c_str(), params_path.c_str());
+		// generateArrayMap(boardConfigJsonPath.c_str(), params_path.c_str());
 
 		//write mem useage to a file
 		FILE*memSt;
@@ -886,4 +996,3 @@ namespace base{
 
 } //namespace base
 } //namespace witin
-
