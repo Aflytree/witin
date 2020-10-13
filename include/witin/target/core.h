@@ -105,13 +105,40 @@ inline void dump_arry_grp_cfg(ARRAY_GRP_CONFIG agc)
 }
 
 typedef struct Bias_Config{
-	int bias_addr_s;
-	int bias_addr_e;
-	int bias_addr_len;
 
+	int bias_column_s;
+	int bias_column_e;
+	int bias_column_len;
+	int bias_row_s;
+	int bias_row_e;
+	int bias_row_len;
+	Bias_Config(){
+		bias_column_s=0;
+		bias_column_e=0;
+		bias_column_len=0;
+		bias_row_s=0;
+		bias_row_e=0;
+		bias_row_len=0;
+	}
 	BIAS_PARAMS b_prams;
 }BIAS_CONFIG;
 
+inline void dump_bias_config_cfg(BIAS_CONFIG mgc)
+{
+	DLOG(INFO)<<"----------bias config ----------";
+
+	DLOG(INFO)<<"mgc.bias_win_column_s : \t"<< mgc.bias_column_s;
+	DLOG(INFO)<<"mgc.bias_win_column_e : \t"<< mgc.bias_column_e;
+	DLOG(INFO)<<"mgc.bias_win_column_len : \t"<< mgc.bias_column_len;
+	DLOG(INFO)<<"mgc.bias_win_row_s : \t"<< mgc.bias_row_s;
+	DLOG(INFO)<<"mgc.bias_win_row_e : \t"<< mgc.bias_row_e;
+	DLOG(INFO)<<"mgc.bias_win_row_len : \t"<< mgc.bias_row_len;
+
+	DLOG(INFO)<<"BIAS_PARAMS : ";
+	DLOG(INFO)<<"     start : \t"<<mgc.b_prams.start;
+	DLOG(INFO)<<"       end : \t"<<mgc.b_prams.end;
+	DLOG(INFO)<<"      size : \t"<<mgc.b_prams.size;
+}
 
 //matrix mul
 typedef struct Mul_Grp{
@@ -346,6 +373,7 @@ typedef struct RoundControl{
 
 	RD_CONTROL_ENABLE	 rd_control_enable;
 	ARRAY_GRP_CONFIG	 array_grp_config;
+	BIAS_CONFIG          bias_config;
 	MUL_GRP_CONFIG		 mul_grp_config;
 	ACTV_GRP_CONFIG		 actv_grp_config;
 	REACTV_GRP_CONFIG	 reactv_grp_config;
@@ -356,6 +384,7 @@ typedef struct RoundControl{
 	DACFIFO_GRP2_CONFIG  dacfifo_grp2_config;
 
 }ROUND_CONFIG;
+
 
 ///*
 // * control of a ROUND, including top control

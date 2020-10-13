@@ -16,9 +16,7 @@
 #include "../../include/witin/op/active.h"
 #include <witin/op/math.h>
 #include <witin/utils/debug.h>
-#include <python3.6m/Python.h>
-// #include "/usr/include/python3.6m/Python.h"
-// #include <Python.h>
+#include <witin/target/util.h>
 
 using namespace witin::base;
 
@@ -33,6 +31,7 @@ class CaculateArryMem caculateArryMem;
 class DACFifoMem dacFifoMem;
 class BiasRegionMem biasRegionMem;
 class RegFileMem regFileMem;
+
 
 namespace witin{
 namespace base{
@@ -93,6 +92,19 @@ namespace base{
 			actv["type"] = rc[i].actv_grp_config.actv_type;
 			actv["limit"] = rc[i].actv_grp_config.limit;
 
+			Json::Value bias;
+			bias["bias_column_s"] = rc[i].bias_config.bias_column_s;
+			bias["bias_column_e"] = rc[i].bias_config.bias_column_e;
+			bias["bias_column_len"] = rc[i].bias_config.bias_column_len;
+			bias["bias_row_s"] = rc[i].bias_config.bias_row_s;
+			bias["bias_row_e"] = rc[i].bias_config.bias_row_e;
+			bias["bias_row_len"] = rc[i].bias_config.bias_row_len;
+			Json::Value bias_params;
+			bias_params["start"] = rc[i].bias_config.b_prams.start;
+			bias_params["end"] = rc[i].bias_config.b_prams.end;
+			bias_params["size"] = rc[i].bias_config.b_prams.size;
+			bias["bias_params"] = Json::Value(bias_params);
+
 			if(rc[i].rd_control_enable.weight_en)
 			{
 				round_cfg["weight"] = Json::Value(weight);
@@ -101,6 +113,11 @@ namespace base{
 			if(rc[i].rd_control_enable.actv_en)
 			{
 				round_cfg["actv"] = Json::Value(actv);
+			}
+
+			if(rc[i].rd_control_enable.bias_en)
+			{
+				round_cfg["bias"] = Json::Value(bias);
 			}
 
 			root["roundConfig"].append(Json::Value(round_cfg));
@@ -208,99 +225,99 @@ namespace base{
 	 * generate  array map
 	 */
 
-	int generateArrayMap(const char* json_path, const char* params_path)
-	{
-		PyObject *pName, *pModule, *pDict, *pFunc;
-		PyObject *pArgs, *pValue;
+	// int generateArrayMap(const char* json_path, const char* params_path)
+	// {
+	// 	PyObject *pName, *pModule, *pDict, *pFunc;
+	// 	PyObject *pArgs, *pValue;
 
-		Py_Initialize();
-		DLOG(INFO)<<"debug point";
-		DLOG(INFO)<<"debug point";
-		PyRun_SimpleString("print('hello world')");
-		PyRun_SimpleString("import sys");
-		DLOG(INFO)<<"debug point";
+	// 	Py_Initialize();
+	// 	DLOG(INFO)<<"debug point";
+	// 	DLOG(INFO)<<"debug point";
+	// 	PyRun_SimpleString("print('hello world')");
+	// 	PyRun_SimpleString("import sys");
+	// 	DLOG(INFO)<<"debug point";
 
-		// PyRun_SimpleString("sys.path.append('./')");
-		char const* pyScriptName = "get_array_map";
-		char const* arrayJson = "./array.json";
-		char const* mapTxt = "./map.txt";
-		char const* logFile = "./log.txt";
-		DLOG(INFO)<<"debug point";
+	// 	// PyRun_SimpleString("sys.path.append('./')");
+	// 	char const* pyScriptName = "get_array_map";
+	// 	char const* arrayJson = "./array.json";
+	// 	char const* mapTxt = "./map.txt";
+	// 	char const* logFile = "./log.txt";
+	// 	DLOG(INFO)<<"debug point";
 
-		pName = PyUnicode_DecodeFSDefault(pyScriptName);
+	// 	pName = PyUnicode_DecodeFSDefault(pyScriptName);
 
-		pModule = PyImport_Import(pName);
-		Py_DECREF(pName);
-		DLOG(INFO)<<"debug point";
+	// 	pModule = PyImport_Import(pName);
+	// 	Py_DECREF(pName);
+	// 	DLOG(INFO)<<"debug point";
 
-		if(pModule != NULL)
-        {
-            pFunc = PyObject_GetAttrString(pModule, "get_array_map");
-            /* pFunc is a new reference */
+	// 	if(pModule != NULL)
+    //     {
+    //         pFunc = PyObject_GetAttrString(pModule, "get_array_map");
+    //         /* pFunc is a new reference */
 
-            if (pFunc && PyCallable_Check(pFunc))
-            {
-                pArgs = PyTuple_New(4);
-				DLOG(INFO)<<"debug point";
+    //         if (pFunc && PyCallable_Check(pFunc))
+    //         {
+    //             pArgs = PyTuple_New(4);
+	// 			DLOG(INFO)<<"debug point";
 
-				PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", arrayJson));
-				PyTuple_SetItem(pArgs, 1, Py_BuildValue("s", json_path));
-				PyTuple_SetItem(pArgs, 2, Py_BuildValue("s", mapTxt));
-				PyTuple_SetItem(pArgs, 3, Py_BuildValue("s", logFile));
-                pValue = PyObject_CallObject(pFunc, pArgs);
-                Py_DECREF(pArgs);
-                if (pValue != NULL)
-                {
-					DLOG(INFO)<<"Result of call: "<<PyLong_AsLong(pValue);
-                    Py_DECREF(pValue);
-                }
-                else
-                {
-                    Py_DECREF(pFunc);
-                    Py_DECREF(pModule);
-                    PyErr_Print();
-					LOG(FATAL)<<"Call failed";
-                    return 1;
-                }
-            }
-            else
-            {
-                if (PyErr_Occurred())
-                    PyErr_Print();
-				LOG(FATAL)<<"Cannot find function";
-            }
-            Py_XDECREF(pFunc);
-            Py_DECREF(pModule);
-        }
-        else
-        {
-            PyErr_Print();
-			LOG(FATAL)<<"Failed to load ";
-            return 1;
-        }
-		return 0;
-	}
+	// 			PyTuple_SetItem(pArgs, 0, Py_BuildValue("s", arrayJson));
+	// 			PyTuple_SetItem(pArgs, 1, Py_BuildValue("s", json_path));
+	// 			PyTuple_SetItem(pArgs, 2, Py_BuildValue("s", mapTxt));
+	// 			PyTuple_SetItem(pArgs, 3, Py_BuildValue("s", logFile));
+    //             pValue = PyObject_CallObject(pFunc, pArgs);
+    //             Py_DECREF(pArgs);
+    //             if (pValue != NULL)
+    //             {
+	// 				DLOG(INFO)<<"Result of call: "<<PyLong_AsLong(pValue);
+    //                 Py_DECREF(pValue);
+    //             }
+    //             else
+    //             {
+    //                 Py_DECREF(pFunc);
+    //                 Py_DECREF(pModule);
+    //                 PyErr_Print();
+	// 				LOG(FATAL)<<"Call failed";
+    //                 return 1;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             if (PyErr_Occurred())
+    //                 PyErr_Print();
+	// 			LOG(FATAL)<<"Cannot find function";
+    //         }
+    //         Py_XDECREF(pFunc);
+    //         Py_DECREF(pModule);
+    //     }
+    //     else
+    //     {
+    //         PyErr_Print();
+	// 		LOG(FATAL)<<"Failed to load ";
+    //         return 1;
+    //     }
+	// 	return 0;
+	// }
 
-	/*
-	 * generate chip register config
-	 */
-	int generateRegConfig(const char* json_path, const char* params_path)
-	{
-		// PyObject *pName, *pModule, *pDict, *pFunc;
-		// PyObject *pArgs, *pValue;
+	// /*
+	//  * generate chip register config
+	//  */
+	// int generateRegConfig(const char* json_path, const char* params_path)
+	// {
+	// 	// PyObject *pName, *pModule, *pDict, *pFunc;
+	// 	// PyObject *pArgs, *pValue;
 
 
-		// Py_Initialize();
+	// 	// Py_Initialize();
 
-		// PyRun_SimpleString("import sys");
-		// PyRun_SimpleString("sys.path.append('./')");
+	// 	// PyRun_SimpleString("import sys");
+	// 	// PyRun_SimpleString("sys.path.append('./')");
 
-		// // pName = PyUnicode_DecodeFSDefault("get_array_map");
-		// pName = PyUnicode_FromString("get_array_map");
+	// 	// // pName = PyUnicode_DecodeFSDefault("get_array_map");
+	// 	// pName = PyUnicode_FromString("get_array_map");
 
-		// pModule = PyImport_Import(pName);
-		return 0;
-	}
+	// 	// pModule = PyImport_Import(pName);
+	// 	return 0;
+	// }
 
 
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
@@ -308,6 +325,7 @@ namespace base{
 		Json::Value root;
 		string params_path = "./params.dat";
 		FILE*stream = fopen("./params.dat", "w");
+		//weight and bias params offset
 		int file_offset = 0;
 
 		DLOG(INFO)<<"*******************Session build******************* ";
@@ -454,10 +472,12 @@ namespace base{
 				ROUND_CONFIG round_cfg_in;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
 				WEIGHT_PARAMS weight_params;
+				BIAS_CONFIG bias_cfg;
 				ACTV_GRP_CONFIG actv_grp_cfg;
 				READDER_CONFIG readder_cfg;
 				REACTV_GRP_CONFIG reactv_grp_cfg;
 				MUL_GRP_CONFIG mul_grp_cfg;
+				BIAS_PARAMS bias_params;
 
 				baseOpNodePtr node = op_list[i];
 				vector<Tensor*> tensors;
@@ -477,6 +497,10 @@ namespace base{
 						rce.actv_en = true;
 						actv_grp_cfg.actv_type = mv_ptr->getActType();
 						actv_grp_cfg.limit= 127;
+					}
+					if(mv_ptr->getBiasEn())
+					{
+						rce.bias_en = true;
 					}
 					else
 					{
@@ -627,6 +651,58 @@ namespace base{
 							}
 						}
 						endTime = clock();
+						mvOpNodePtr node_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
+
+						if(node_ptr->getBiasEn())
+						{
+							vector<int16_t> bias_data = node_ptr->getBiasData();
+							//需要为bias分配空间
+							size_t bias_size = bias_data.size();
+							vector<int16_t> data1 ;
+							vector<int16_t> data2 ;
+							for(size_t bias_index = 0; bias_index < bias_data.size();bias_index++)
+							{
+								int16_t up = (bias_data[bias_index] / 128) / 2;
+								int16_t down = (bias_data[bias_index] / 128) -  (bias_data[bias_index] / 128) / 2;
+								data1.push_back(up);
+								data2.push_back(down);
+							}
+							for(size_t data1_idx = 0; data1_idx < data1.size();data1_idx++)
+								fprintf(stream, "%c", data1[data1_idx]);
+							for(size_t data2_idx = 0; data2_idx < data2.size();data2_idx++)
+								fprintf(stream, "%c", data2[data2_idx]);
+							bias_params.start = file_offset;
+							bias_params.end = file_offset + 2 * bias_size - 1;
+							bias_params.size = 2 * bias_size;
+							file_offset += 2 * bias_size;
+
+							int bias_start_row_addr = biasRegionMem.allocBiasRowRegionMem(2);
+							bias_cfg.bias_row_len = 2;
+							bias_cfg.bias_row_s = bias_start_row_addr;
+							bias_cfg.bias_row_e = bias_start_row_addr + 2 - 1;
+
+							bias_cfg.bias_column_len = column_size;
+							bias_cfg.bias_column_s = start_alloc_column_addr;
+							bias_cfg.bias_column_e = start_alloc_column_addr + column_size - 1;
+							bias_cfg.b_prams = bias_params;
+						}
+						else
+						{
+							for(size_t data1_idx = 0; data1_idx < column_size;data1_idx++)
+								fprintf(stream, "%c", 0);
+							for(size_t data2_idx = 0; data2_idx < column_size;data2_idx++)
+								fprintf(stream, "%c", 0);
+
+							int bias_start_row_addr = biasRegionMem.allocBiasRowRegionMem(2);
+							bias_cfg.bias_row_len = 2;
+							bias_cfg.bias_row_s = bias_start_row_addr;
+							bias_cfg.bias_row_e = bias_start_row_addr + 2 - 1;
+
+							bias_cfg.bias_column_len = column_size;
+							bias_cfg.bias_column_s = start_alloc_column_addr;
+							bias_cfg.bias_column_e = start_alloc_column_addr + column_size - 1;
+							bias_cfg.b_prams = bias_params;
+						}
 
 #ifdef TIME_PROF
 						std::cout<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s"<<std::endl;
@@ -698,7 +774,7 @@ namespace base{
 							}
 
 							tensor_mem_record_map.insert(pair<Tensor*, struct mem_record>
-																		(output_tensors[k], mr));
+																	(output_tensors[k], mr));
 						}
 						else
 						{
@@ -706,18 +782,15 @@ namespace base{
 						}
 					}
 				}
-#ifdef WITIN_DEBUG
-				dump_rd_ctrl_enable(rce);
-				dump_arry_grp_cfg(arry_grp_cfg);
-				dump_readder_grp_cfg(readder_cfg);
-				dump_reactv_grp_cfg(reactv_grp_cfg);
-				dump_mul_grp_cfg(mul_grp_cfg);
-#endif
 				round_cfg_in.rd_control_enable = rce;
 				round_cfg_in.array_grp_config = arry_grp_cfg;
 				round_cfg_in.readder_config = readder_cfg;
 				round_cfg_in.actv_grp_config = actv_grp_cfg;
-
+				round_cfg_in.bias_config = bias_cfg;
+				round_cfg_in.mul_grp_config = mul_grp_cfg;
+#ifdef WITIN_DEBUG
+				dump_round_info(round_cfg_in);
+#endif
 				rounds.push_back(round_cfg_in);
 			}
 			else  /*normal node*/
@@ -729,6 +802,8 @@ namespace base{
 				ROUND_CONFIG round_cfg_norm;
 				ARRAY_GRP_CONFIG arry_grp_cfg;
 				WEIGHT_PARAMS weight_params;
+				BIAS_PARAMS bias_params;
+				BIAS_CONFIG bias_cfg;
 				ACTV_GRP_CONFIG actv_grp_cfg;
 				READDER_CONFIG readder_cfg;
 				REACTV_GRP_CONFIG reactv_grp_cfg;
@@ -750,6 +825,10 @@ namespace base{
 						rce.actv_en = true;
 						actv_grp_cfg.actv_type = mv_ptr->getActType();
 						actv_grp_cfg.limit= 127;
+					}
+					if(mv_ptr->getBiasEn())
+					{
+						rce.bias_en = true;
 					}
 					else
 					{
@@ -789,7 +868,6 @@ namespace base{
 				DLOG(INFO)<<"[NORMAL] input_tensors total : "<<input_tensors.size();
 				for(size_t n = 0; n < input_tensors.size();n++ )
 				{
-
 					auto iter = tensor_mem_record_map.find(input_tensors[n]);
 
 					//input tensor and not const_type
@@ -873,6 +951,58 @@ namespace base{
 							}
 						}
 						endTime = clock();
+
+						mvOpNodePtr node_ptr = std::dynamic_pointer_cast<mvOpNode>(node);
+						if(node_ptr->getBiasEn())
+						{
+							vector<int16_t> bias_data = node_ptr->getBiasData();
+							//需要为bias分配空间
+							size_t bias_size = bias_data.size();
+							vector<char> data1 ;
+							vector<char> data2 ;
+							for(size_t bias_index = 0; bias_index < bias_data.size();bias_index++)
+							{
+								char up = (bias_data[bias_index] / 128) / 2;
+								char down = (bias_data[bias_index] / 128) - (bias_data[bias_index] / 128) / 2;
+								data1.push_back(up);
+								data2.push_back(down);
+							}
+							for(size_t data1_idx = 0; data1_idx < data1.size();data1_idx++)
+								fprintf(stream, "%c", data1[data1_idx]);
+							for(size_t data2_idx = 0; data2_idx < data2.size();data2_idx++)
+								fprintf(stream, "%c", data2[data2_idx]);
+							bias_params.start = file_offset;
+							bias_params.end = file_offset + 2 * bias_size - 1;
+							bias_params.size = 2 * bias_size;
+							file_offset += 2 * bias_size;
+
+							int bias_start_row_addr = biasRegionMem.allocBiasRowRegionMem(2);
+							bias_cfg.bias_row_len = 2;
+							bias_cfg.bias_row_s = bias_start_row_addr;
+							bias_cfg.bias_row_e = bias_start_row_addr + 2 - 1;
+
+							bias_cfg.bias_column_len = column_size;
+							bias_cfg.bias_column_s = start_alloc_column_addr;
+							bias_cfg.bias_column_e = start_alloc_column_addr + column_size - 1;
+							bias_cfg.b_prams = bias_params;
+						}
+						else
+						{
+							for(size_t data1_idx = 0; data1_idx < column_size;data1_idx++)
+								fprintf(stream, "%c", 0);
+							for(size_t data2_idx = 0; data2_idx < column_size;data2_idx++)
+								fprintf(stream, "%c", 0);
+
+							int bias_start_row_addr = biasRegionMem.allocBiasRowRegionMem(2);
+							bias_cfg.bias_row_len = 2;
+							bias_cfg.bias_row_s = bias_start_row_addr;
+							bias_cfg.bias_row_e = bias_start_row_addr + 2 - 1;
+
+							bias_cfg.bias_column_len = column_size;
+							bias_cfg.bias_column_s = start_alloc_column_addr;
+							bias_cfg.bias_column_e = start_alloc_column_addr + column_size - 1;
+							bias_cfg.b_prams = bias_params;
+						}
 #ifdef TIME_PROF
 						DLOG(INFO)<<"The copy time is "<<(double)(endTime - startTime) / CLOCKS_PER_SEC <<"s";
 #endif
@@ -956,18 +1086,16 @@ namespace base{
 				{
 					DLOG(INFO)<<"This is output node !!";
 				}
-#ifdef WITIN_DEBUG
-				dump_rd_ctrl_enable(rce);
-				dump_arry_grp_cfg(arry_grp_cfg);
-				dump_readder_grp_cfg(readder_cfg);
-				dump_reactv_grp_cfg(reactv_grp_cfg);
-				dump_mul_grp_cfg(mul_grp_cfg);
-#endif
+
 				round_cfg_norm.rd_control_enable = rce;
 				round_cfg_norm.array_grp_config = arry_grp_cfg;
 				round_cfg_norm.readder_config = readder_cfg;
 				round_cfg_norm.reactv_grp_config = reactv_grp_cfg;
-
+				round_cfg_norm.bias_config = bias_cfg;
+				round_cfg_norm.mul_grp_config = mul_grp_cfg;
+#ifdef WITIN_DEBUG
+				dump_round_info(round_cfg_norm);
+#endif
 				rounds.push_back(round_cfg_norm);
 			}
 		}

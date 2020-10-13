@@ -16,12 +16,17 @@ namespace witin{
 namespace base{
 
 
-class MV_ATTRS : public ATTRS{
+class ACT_ATTRS : public ATTRS{
 public:
 	int act_en;
 	string act_type;
 };
 
+class BIAS_ATTRS : public ATTRS{
+public:
+	int bias_en;
+	vector<int16_t> data;
+};
 
 class mvOpNode : public OpNode{
     public:
@@ -34,7 +39,9 @@ class mvOpNode : public OpNode{
 				 int id = MV_OPNODE_ID,
 				 const std::string name = "",
 				 bool act_en = 0,
-				 string act_type = ""
+				 string act_type = "",
+				 bool bias_add_en = false,
+				 vector<int16_t> bias_data = {}
 				 )
         : OpNode{id, name}
         {
@@ -45,8 +52,10 @@ class mvOpNode : public OpNode{
 					c_tensor->getData());
             this->id = id;
             this->name = name;
-			this->mv_attrs.act_en = act_en;
-			this->mv_attrs.act_type = act_type;
+			this->act_attrs.act_en = act_en;
+			this->act_attrs.act_type = act_type;
+			this->bias_attrs.bias_en = bias_add_en;
+			this->bias_attrs.data = bias_data;
         }
 
 		/*
@@ -95,19 +104,31 @@ class mvOpNode : public OpNode{
 
 		bool getActEn()
 		{
-			return mv_attrs.act_en;
+			return act_attrs.act_en;
 		}
 
 		string getActType()
 		{
-			return mv_attrs.act_type;
+			return act_attrs.act_type;
 		}
+
+		bool getBiasEn()
+		{
+			return bias_attrs.bias_en;
+		}
+
+		vector<int16_t> getBiasData()
+		{
+			return bias_attrs.data;
+		}
+
 
     private :
         int id;
         string name;
 		vector<vector<int> > input1_shape;
-		class MV_ATTRS mv_attrs;
+		class ACT_ATTRS act_attrs;
+		class BIAS_ATTRS bias_attrs;
 		Tensor *const_tensor;
 };
 

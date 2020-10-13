@@ -17,7 +17,9 @@ namespace witin{
 namespace base{
 
 //BIAS
-#define BIAS_MEM_SIZE 16*1024
+#define BIAS_MEM_SIZE 32*1024
+#define BIAS_ROW_SIZE 32
+#define BIAS_COLUMN_SIZE 1024
 
 //ARRAY
 #define ARRAY_MEM_SIZE		2*1024 * 1*1024
@@ -140,22 +142,49 @@ class RegFileMem : public Mem{
 //bias mem
 class BiasRegionMem : public Mem{
 	public:
-		BiasRegionMem(){}
+		BiasRegionMem(){
+			biasRowUsedSize = 0;
+			biasRowUsedStart = 0;
+			biasRowUsedEnd = 0;
+
+			biasColumnUsedSize = 0;
+			biasColumnUsedStart = 0;
+			biasColumnUsedEnd = 0;
+		}
 
 		int useBiadMemFlag = 0;
 
 		//alloc
-		int allocBiasRegionMem(int &addr, int size);
+		int allocBiasRowRegionMem(int size)
+		{
+			DLOG(INFO)<<"biasRowUsedSize1 = "<<biasRowUsedSize;
+
+			int biasStart = biasRowUsedSize;
+			biasRowUsedSize += size;
+			DLOG(INFO)<<"size = "<<size;
+			DLOG(INFO)<<"biasRowUsedSize = "<<biasRowUsedSize;
+			DLOG(INFO)<<"biasStart = "<<biasStart;
+			if(biasRowUsedSize > BIAS_ROW_SIZE)
+				LOG(FATAL)<<"biasRowUsedSize is greater than BIAS_ROW_SIZE "
+						  <<biasRowUsedSize<<"vs"<<BIAS_ROW_SIZE;
+			return biasStart;
+		}
 		//free
-		int freeBiasRegionMem(int addr, int size);
+		int freeBiasRegionMem(int addr, int size){return 0;}
 
-	private:
-		int biasRegionSize = BIAS_MEM_SIZE;
+		//bias size
+		int biasRowSize = BIAS_ROW_SIZE;
+		int biasColumnSize = BIAS_COLUMN_SIZE;
 
-		//mem manager
-		int biasRegionUsedSize = 0;
-		int biasRegionUsedStart = 0;
-		int biasRegionUsedEnd = 0;
+		//row manager
+		int biasRowUsedSize = 0;
+		int biasRowUsedStart = 0;
+		int biasRowUsedEnd = 0;
+
+		//column manager
+		int biasColumnUsedSize = 0;
+		int biasColumnUsedStart = 0;
+		int biasColumnUsedEnd = 0;
 };
 
 //static class BiasRegionMem biasRegionMem;
