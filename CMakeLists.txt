@@ -11,6 +11,7 @@ file(GLOB SOURCES "src/node/*.cpp"
 	"src/tensor/*.cpp"
 	"src/target/*.cpp"
 	"src/session/*.cpp"
+	"src/sim/*.cpp"
 	"src/utils/*.cpp"
 	)
 file(GLOB SOURCES_BRANCH "src/branch.cpp")

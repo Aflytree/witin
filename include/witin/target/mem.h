@@ -254,9 +254,16 @@ class CaculateArryMem : public Mem{
 		int allocColumnMem(int &columnAddr, int size)
 		{
 			DLOG(INFO)<<" :ARRAY columnAddr "<<columnAddr<<" size "<<size;
+			DLOG(INFO)<<" :ARRAY arrayColumnUsedSize "<<arrayColumnUsedSize;
 			if(columnAddr < 0 || size < 0)
 			{
 				LOG(FATAL)<<"addr or size is less than 0  when allocate column CaculateArryMem!";
+			}
+
+			if((array_row_down_flag == 1) && ((arrayColumnUsedSize + size) > ARRAY_COLUMN_SIZE))
+			{
+				DLOG(FATAL)<<" array_row_down_flag = 1: Array Column addr is not enough to alloc !";
+
 			}
 
 			if((arrayColumnUsedSize + size) > ARRAY_COLUMN_SIZE)

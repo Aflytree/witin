@@ -42,6 +42,29 @@ class OpNode : public node{
             this->id = id;
             this->name = name;
         }
+		~OpNode()
+		{
+			if(top_tensors.size() > 0)
+			{
+				for(Tensor* kv : top_tensors)
+					delete kv;
+			}
+			if(bottom_tensors.size() > 0)
+			{
+				for(Tensor* kv : bottom_tensors)
+					delete kv;
+			}
+			if(array_input_tensors.size() > 0)
+			{
+				for(Tensor* kv : array_input_tensors)
+					delete kv;
+			}
+			if(array_output_tensors.size() > 0)
+			{
+				for(Tensor* kv : array_output_tensors)
+					delete kv;
+			}
+		}
 
 		string getName()
 		{
@@ -102,12 +125,32 @@ class OpNode : public node{
 			vector<vector<int> > ret;
 			return ret;
 		}
+		virtual void forward(Tensor* input_tensor, Tensor* output_tensor,
+												   Tensor* array_result) {};
 
 		virtual bool isUseConstTensor(){return false;}
 		virtual int getConstTensor(Tensor **t){return 0;}
 
 		vector<Tensor*> input_tensors;
 		vector<Tensor*> output_tensors;
+
+		/* **************for op forward***************** */
+		/* all tensor type is CONST_TYPE */
+		void updateInputTensors(Tensor* ts);
+		void updateOutputTensors(Tensor* ts, Tensor* array_result_tensor);
+
+		vector<Tensor*> getBottomTensors(){return bottom_tensors;}
+		vector<Tensor*> getTopTensors(){return top_tensors;}
+
+		//input tensors type:Const
+		vector<Tensor*> top_tensors;
+		//output tensors type:Const
+		vector<Tensor*> bottom_tensors;
+
+		//input tensors type:Const
+		vector<Tensor*> array_input_tensors;
+		//output tensors type:Const
+		vector<Tensor*> array_output_tensors;
 
 	private:
         int id;

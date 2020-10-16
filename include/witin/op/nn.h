@@ -11,6 +11,7 @@
 
 #include <witin/global.h>
 #include <witin/tensor/tensor.h>
+#include <witin/sim/lib.h>
 
 namespace witin{
 namespace base{
@@ -122,6 +123,91 @@ class mvOpNode : public OpNode{
 			return bias_attrs.data;
 		}
 
+		void forward(Tensor *input_tensor, Tensor* output_tensor, Tensor* array_result)
+		{
+			DLOG(INFO)<<"mvOpNode forward --->";
+			vector<int> shape1 = input_tensor->getShape();
+			vector<int> shape2 = const_tensor->getShape();
+			vector<int> scale_table = {128, 256, 512,  1024, 2048, 4096};
+			vector<int> scale_table_index = {7, 8, 9, 10, 11};
+			int index = 0;
+			for(size_t idx = 0; idx < scale_table.size(); idx++)
+			{
+				if(scale_table[idx] == scale)
+				{
+					index = idx;
+					break;
+				}
+			}
+			shift_scale = scale_table_index[index];
+
+			DLOG(INFO)<<"shape1:"<< shape1;
+			DLOG(INFO)<<"shape2:"<< shape2;
+
+			vector<int16_t> arrayResult = ComputeArrayMac(input_tensor, const_tensor);
+			// DLOG(INFO)<<"arrayResult:"<< arrayResult;
+			vector<int16_t> biasResult ;
+			vector<char> afterArray;
+			vector<char> actResult;
+			vector<char> final_result;
+
+			//bias compute
+			if(getBiasEn())
+			{
+				biasResult = ComputeBiasAdd(arrayResult, getBiasData());
+				// DLOG(INFO)<<"biasResult:"<< biasResult;
+				for(auto kv : biasResult)
+				{
+					int afterShift = kv >> shift_scale;
+					if(round(afterShift) > 127)
+						afterArray.push_back(127);
+					else if(round(afterShift) < -128)
+						afterArray.push_back(-128);
+					else
+						afterArray.push_back(round(afterShift));
+				}
+			}
+			else
+			{
+				for(auto kv : arrayResult)
+				{
+					int afterShift = kv >> shift_scale;
+					if(round(afterShift) > 127)
+						afterArray.push_back(127);
+					else if(round(afterShift) < -128)
+						afterArray.push_back(127);
+					else
+						afterArray.push_back(round(afterShift));
+				}
+			}
+			// DLOG(INFO)<<"afterArray:"<< afterArray;
+
+			//act compute
+			if(getActEn())
+			{
+				if(getActType() == "relu")
+					actResult = ComputeRelu(afterArray);
+				if(getActType() == "tanh")
+					actResult = ComputeTanh(afterArray);
+				if(getActType() == "sigmoid")
+					actResult = ComputeSigmoid(afterArray);
+			}
+
+			//final_result
+			if(getBiasEn() && getActEn())
+				final_result = actResult;
+			else if(getBiasEn() && !getActEn())
+				final_result = afterArray;
+			else if(!getBiasEn() && !getActEn())
+				final_result = afterArray;
+			else
+				final_result = afterArray;
+
+			vector<vector<int> > int_shape = infer_shape();
+			fillTensorPtr(output_tensor, int_shape[0], final_result);
+			//output simple array result
+			fillTensorPtr(array_result, int_shape[0], afterArray);
+		}
 
     private :
         int id;
@@ -130,6 +216,8 @@ class mvOpNode : public OpNode{
 		class ACT_ATTRS act_attrs;
 		class BIAS_ATTRS bias_attrs;
 		Tensor *const_tensor;
+		int scale = 512;
+		int shift_scale;
 };
 
 } //namespace base

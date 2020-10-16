@@ -23,7 +23,7 @@ using namespace witin::base;
 //class tmpNode no;
 typedef std::shared_ptr<witin::base::OpNode> baseOpNodePtr;
 typedef std::shared_ptr<witin::base::mvOpNode> mvOpNodePtr;
-typedef std::shared_ptr<witin::base::LogOpNode> lOpNodePtr;
+typedef std::shared_ptr<witin::base::LogOpNode> logNodePtr;
 typedef std::shared_ptr<witin::base::TanhOpNode> tanhOpNodePtr;
 typedef std::shared_ptr<witin::base::ActOpNode> actOpNodePtr;
 
@@ -44,7 +44,7 @@ namespace base{
 	{
 		DLOG(INFO)<<"JSON CPP VERSION:"<<JSONCPP_VERSION_STRING;
 		Json::Value root;
-		root["params_path"] = params_path;
+		root["params_path"] = "./params.dat";
 		root["round_total"] = (int)rc.size();
 
 		DLOG(INFO)<<"round total:"<<rc.size();
@@ -203,7 +203,7 @@ namespace base{
 		int arrayColumnUsedSize = 0;
 		int arrayRowUsedSize = 0;
 
-		FILE*data = fopen("./memInitFile.data", "r");
+		FILE*data = fopen("./build/memInitFile.data", "r");
 		if(!data)
 		{
 			LOG(FATAL)<<"Open memInitFile.data error!";
@@ -323,12 +323,12 @@ namespace base{
 	int32_t Session::build(WitinGraphType &InGraph, vector<vector<int> > shapes)
 	{
 		Json::Value root;
-		string params_path = "./params.dat";
-		FILE*stream = fopen("./params.dat", "w");
+		string params_path = "./build/params.dat";
+		FILE*stream = fopen("./build/params.dat", "w");
 		//weight and bias params offset
 		int file_offset = 0;
 
-		DLOG(INFO)<<"*******************Session build******************* ";
+		DLOG(INFO)<<"**************Session build************** ";
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
 		Core core;
@@ -350,7 +350,7 @@ namespace base{
 		 * create all the tensors
 		 *
 		 */
-		DLOG(INFO)<<"===========================Generate Tensors=========================";
+		DLOG(INFO)<<"=============Generate Tensors================";
 		DLOG(INFO)<<"Create input and output tensors ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
@@ -459,7 +459,7 @@ namespace base{
 		//const Tensor: array
 		//input / output : regfile
 
-		DLOG(INFO)<<"===============================alloc===============================";
+		DLOG(INFO)<<"=====================alloc=====================";
 		DLOG(INFO)<<"Alloc memory and generate config for every round ...";
 		for(size_t i = 0; i < op_list.size(); i++)
 		{
@@ -498,14 +498,16 @@ namespace base{
 						actv_grp_cfg.actv_type = mv_ptr->getActType();
 						actv_grp_cfg.limit= 127;
 					}
-					if(mv_ptr->getBiasEn())
-					{
-						rce.bias_en = true;
-					}
 					else
 					{
 						rce.actv_en = false;
 					}
+
+					if(mv_ptr->getBiasEn())
+						rce.bias_en = true;
+					else
+						rce.bias_en = false;
+
 				}
 				else if(node_id == POOL_OPNODE_ID){}
 				else if(node_id == TANH_OPNODE_ID){}
@@ -826,14 +828,16 @@ namespace base{
 						actv_grp_cfg.actv_type = mv_ptr->getActType();
 						actv_grp_cfg.limit= 127;
 					}
-					if(mv_ptr->getBiasEn())
-					{
-						rce.bias_en = true;
-					}
 					else
 					{
 						rce.actv_en = false;
 					}
+
+					if(mv_ptr->getBiasEn())
+						rce.bias_en = true;
+					else
+						rce.bias_en = false;
+
 				}
 				else if(node->getID() == ADD_OPNODE_ID)
 				{
@@ -1101,23 +1105,180 @@ namespace base{
 		}
 
 		fclose(stream);
-		string boardConfigJsonPath = "./BoardConfig.json";
+		string boardConfigJsonPath = "./build/BoardConfig.json";
 		writeToJson(rounds, params_path, boardConfigJsonPath);
 		// generateRegConfig(boardConfigJsonPath.c_str(), params_path.c_str());
 		// generateArrayMap(boardConfigJsonPath.c_str(), params_path.c_str());
 
 		//write mem useage to a file
 		FILE*memSt;
-		memSt = fopen("./memInitFile.data", "w");
+		memSt = fopen("./build/memInitFile.data", "w");
 		DLOG(INFO)<<"Write mem usage into memInitFile.data!";
 		fprintf(memSt, "%d\n", regFileMem.getGeneralUsedSize());
 		fprintf(memSt, "%d\n", caculateArryMem.getArryColumnUsedSize());
 		fprintf(memSt, "%d\n", caculateArryMem.getArryRowUsedSize());
 		fclose(memSt);
 		DLOG(INFO)<<"Generate BoardConfig end";
+
 	}
 
-	int32_t Session::run(WitinGraphType &InGraph, std::vector<Tensor*> inputs)
+	int32_t Session::genCalibrationConfig(WitinGraphType &InGraph,
+											std::vector<Tensor*> input_tensors)
+	{
+		DLOG(INFO)<<"========Generate Array Calibration Config============";
+		FILE*stream_in = fopen("./build/output/map/expected_in.bin", "wb");
+		FILE*stream_out = fopen("./build/output/map/expected_out.bin", "wb");
+		if(!stream_in)
+		{
+			LOG(FATAL)<<"Open expected_in.bin error!";
+		}
+		if(!stream_out)
+		{
+			LOG(FATAL)<<"Open expected_out.bin error!";
+		}
+		auto in_nodes = InGraph.inNodes();
+		auto out_nodes = InGraph.outNodes();
+		vector<int> shape_input = input_tensors[0]->getShape();
+		DLOG(INFO)<<"calibration input shape:"<<shape_input;
+		// input_tensors[0]->print();
+		// input_tensors[1]->print();
+
+		vector<baseOpNodePtr> op_list = InGraph.graph_topological_sort();
+		vector<Tensor*> output_tensors;
+
+		vector<vector<vector<int16_t>>> data_3dim_output;
+		vector<vector<vector<int16_t>>> data_3dim_input;
+		data_3dim_output.resize(op_list.size());
+		data_3dim_input.resize(op_list.size());
+
+		for(auto r = 0; r < op_list.size(); r++)
+		{
+			data_3dim_output.resize(input_tensors.size());
+			data_3dim_input.resize(input_tensors.size());
+		}
+
+		for(size_t idx = 0; idx < input_tensors.size(); idx++)
+		// for(size_t idx = 0; idx < 2; idx++)
+		{
+			for(size_t i = 0; i < op_list.size(); i++)
+			{
+				if(isInputNode(op_list[i], in_nodes))
+				{
+					DLOG(INFO)<<"[Input Node]";
+					baseOpNodePtr node = op_list[i];
+					vector<vector<int> > int_shape = node->infer_shape();
+					Tensor* out = new Tensor(int_shape[0], CONST_TYPE);
+					Tensor* array_result_tensor = new Tensor(int_shape[0], CONST_TYPE);
+					node->forward(input_tensors[idx], out, array_result_tensor);
+					node->updateInputTensors(input_tensors[idx]);
+					node->updateOutputTensors(out, array_result_tensor);
+					DLOG(INFO)<<"[forward]: output Tensor:";
+					array_result_tensor->print();
+					vector<int16_t>data_output;
+					vector<int16_t>data_input;
+
+					//out --> vector<char> data_output
+					for(int k = 0; k < int_shape[0][1]; k ++)
+						data_output.push_back((int16_t)((char*)array_result_tensor->getData())[k]);
+					data_3dim_output[i].push_back(data_output);
+
+					for(int k = 0; k < (input_tensors[idx]->getShape())[1]; k ++)
+						data_input.push_back((int16_t)((char*)input_tensors[idx]->getData())[k]);
+					data_3dim_input[i].push_back(data_input);
+
+					delete out;
+					delete array_result_tensor;
+				}
+				else if(isOutputNode(op_list[i], out_nodes))
+				{
+					DLOG(INFO)<<"[Output Node]";
+					baseOpNodePtr node = op_list[i];
+					vector<baseOpNodePtr> innodes = InGraph.innodes_of_node(op_list[i]);
+					vector<Tensor*> in_node_tensors = innodes[0]->getBottomTensors();
+					vector<vector<int> > int_shape = node->infer_shape();
+					Tensor* out = new Tensor(int_shape[0], CONST_TYPE);
+					Tensor* array_result_tensor = new Tensor(int_shape[0], CONST_TYPE);
+					node->forward(in_node_tensors[idx], out, array_result_tensor);
+					node->updateInputTensors(input_tensors[idx]);
+					node->updateOutputTensors(out, array_result_tensor);
+					DLOG(INFO)<<"[forward]: *****final output Tensor*****:";
+					out->print();
+					output_tensors.push_back(out);
+					//out --> vector<char> data_output
+					vector<int16_t>data_output;
+					vector<int16_t>data_input;
+
+					for(int k = 0; k < int_shape[0][1]; k ++)
+						data_output.push_back((int16_t)((char*)array_result_tensor->getData())[k]);
+					data_3dim_output[i].push_back(data_output);
+
+					for(int k = 0; k < (in_node_tensors[idx]->getShape())[1]; k ++)
+						data_input.push_back((int16_t)((char*)in_node_tensors[idx]->getData())[k]);
+					data_3dim_input[i].push_back(data_input);
+
+					delete out;
+					delete array_result_tensor;
+				}
+				else
+				{
+					DLOG(INFO)<<"[Normal Node]";
+					baseOpNodePtr node = op_list[i];
+					vector<baseOpNodePtr> innodes = InGraph.innodes_of_node(op_list[i]);
+					vector<Tensor*> in_node_tensors = innodes[0]->getBottomTensors();
+					vector<vector<int> > int_shape = node->infer_shape();
+					Tensor* out = new Tensor(int_shape[0], CONST_TYPE);
+					Tensor* array_result_tensor = new Tensor(int_shape[0], CONST_TYPE);
+					node->forward(in_node_tensors[idx], out, array_result_tensor);
+					node->updateInputTensors(input_tensors[idx]);
+					node->updateOutputTensors(out, array_result_tensor);
+					DLOG(INFO)<<"[forward]: *****final outout Tensor*****:";
+					//out --> vector<char> data_output
+					vector<int16_t>data_output;
+					vector<int16_t>data_input;
+					for(int k = 0; k < int_shape[0][1]; k ++)
+						data_output.push_back((int16_t)((char*)array_result_tensor->getData())[k]);
+					data_3dim_output[i].push_back(data_output);
+
+					for(int k = 0; k < (in_node_tensors[idx]->getShape())[1]; k ++)
+						data_input.push_back((int16_t)((char*)in_node_tensors[idx]->getData())[k]);
+					data_3dim_input[i].push_back(data_input);
+
+					delete out;
+					delete array_result_tensor;
+				}
+			}
+		}
+		int layers = op_list.size();
+		fwrite(&layers, sizeof(u_int16_t), 1, stream_in);
+		for(size_t m = 0; m < op_list.size(); m++)
+		// for(size_t m = 0; m < 1; m++)
+		{
+			int n = 0;
+			int z = 0;
+			//input
+			for (auto kv : data_3dim_input[m])
+			{
+				fwrite(kv.data(), sizeof(int16_t), kv.size(), stream_in);
+				// DLOG(INFO)<<"[in] m = "<<m<<" n = "<<ln<< " size = "<<kv.size()<<" data:"<<kv;
+				n++;
+			}
+			//output
+			for (auto kv : data_3dim_output[m])
+			{
+				for(auto kk : kv)
+				// DLOG(INFO)<<"data:"<<(int)kk;
+				fwrite(kv.data(), sizeof(int16_t), (int)(kv.size()), stream_out);
+				// DLOG(INFO)<<"[out] m = "<<m<<" z = "<<z<< " size = "<<kv.size()<<" data:"<<kv;
+				z++;
+			}
+		}
+		fclose(stream_in);
+		fclose(stream_out);
+		DLOG(INFO)<<"Calibration total input size:"<<output_tensors.size();
+		DLOG(INFO)<<"Generate Array Calibration Config end !";
+	}
+
+	int32_t Session::run(WitinGraphType &InGraph, std::vector<Tensor*> input_tensors)
 	{
 
 	}

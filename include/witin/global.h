@@ -21,6 +21,7 @@
 #include <utility>
 #include <deque>
 #include <map>
+#include <algorithm>
 #include <json/json.h>
 #include <dmlc/logging.h>
 
@@ -52,5 +53,48 @@ enum OTHER_OPNODE_ID{
 
 #define WITIN_DEBUG
 #define TIME_PROF
+
+namespace std{
+	inline ostream& operator << (ostream &output, vector<int> &v) {
+		output<<"[";
+		for (auto i = v.begin(); i < v.end(); i++) {
+			output << *i;
+			if (i < v.end() - 1)
+				output << " ";
+		}
+		output<<"]";
+		return output;
+	}
+	inline ostream& operator << (ostream &output, vector<char> &v) {
+		output<<"[";
+		for (auto i = v.begin(); i < v.end(); i++) {
+			output << (int)*i;
+			if (i < v.end() - 1)
+				output << " ";
+		}
+		output<<"]";
+		return output;
+	}
+	inline ostream& operator << (ostream &output, vector<int16_t> &v) {
+		output<<"[";
+		for (auto i = v.begin(); i < v.end(); i++) {
+			output << *i;
+			if (i < v.end() - 1)
+				output << " ";
+		}
+		output<<"]";
+		return output;
+	}
+	inline ostream& operator << (ostream &output, vector<int64_t> &v) {
+		output<<"[";
+		for (auto i = v.begin(); i < v.end(); i++) {
+			output << *i;
+			if (i < v.end() - 1)
+				output << " ";
+		}
+		output<<"]";
+		return output;
+	}
+};
 
 #endif

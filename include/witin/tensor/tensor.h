@@ -76,13 +76,17 @@ class Tensor{
     	vector<int> getShape() const;
 		void print() const;
 
+		//[11, 1] --> [1, 11]
+		void transpose()
+		{
+			reverse(shape.begin(), shape.end());
+		}
+
 		void *getData() const;
     	int getSize(int & size) const;
     	int setData(void * data_in);
 
-
 		int setConsumers(vector<OpNode> ops){ return 0;}
-
 		int getConsumers(vector<OpNode> &ops){ return 0;}
 		int getConsumersNum()
 		{
@@ -118,7 +122,7 @@ class Tensor{
 		void* __data;
 };
 
-inline int fillTensorPtr(Tensor *t, vector<int> shape, void * value)
+inline int fillTensorPtr(Tensor *t, vector<int> shape, void *value)
 {
 	char * data;
 	int size = 1;
@@ -143,9 +147,30 @@ inline int fillTensorPtr(Tensor *t, vector<int> shape, void * value)
 	return 0;
 }
 
+inline int fillTensorPtr(Tensor *t, vector<int> shape,  vector<char>value)
+{
+	char * data;
+	int size = 1;
+	for(size_t i = 0; i < shape.size();i++)
+	{
+		size *= shape[i];
+	}
+	data = (char*)malloc(size);
 
+	for(int i = 0; i < shape[0]; i++)
+	{
+		for(int j = 0; j < shape[1]; j++)
+		{
+			data[i * shape[1] + j] = value[i + j];
+			//DLOG(INFO)<<"data:"<<(int)(char)(i+j);
+			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
+		}
+	}
+	t->setData((void*)data);
 
-
+	free(data);
+	return 0;
+}
 
 }// namespace base
 }// namespace witin
