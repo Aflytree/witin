@@ -612,11 +612,15 @@ namespace base{
 						DLOG(INFO)<<"	No."<<j<<" CONST_TYPE";
 						int	column_size =  input_tensors[j]->getShape()[1];
 						int	start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
-						caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
+						int retColumnAddr = caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
+						if(retColumnAddr)
+							start_alloc_column_addr = retColumnAddr;
 
 						int row_size =  input_tensors[j]->getShape()[0];
 						int start_alloc_row_addr = 0;
-						caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
+						int retAddr = caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
+						if(retAddr)
+							start_alloc_row_addr = retAddr;
 
 						struct mem_record mr;
 
@@ -919,12 +923,15 @@ namespace base{
 					{
 						int column_size =  input_tensors[n]->getShape()[1];
 						int start_alloc_column_addr = caculateArryMem.getArryColumnUsedSize();
-						caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
+						int retColumnAddr = caculateArryMem.allocColumnMem(start_alloc_column_addr, column_size);
+						if(retColumnAddr)
+							start_alloc_column_addr = retColumnAddr;
 
 						int row_size =  input_tensors[n]->getShape()[0];
 						int start_alloc_row_addr = 0;
-
-						caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
+						int retAddr = caculateArryMem.allocRowMem(start_alloc_row_addr, row_size);
+						if(retAddr)
+							start_alloc_row_addr = retAddr;
 						struct mem_record mr;
 
 						mr.mem_type = ARRAY_MEM_TYPE;
