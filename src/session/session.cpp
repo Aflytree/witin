@@ -66,7 +66,7 @@ namespace base{
 			round_cfg["fifo_grp1_en"] = rc[i].rd_control_enable.fifo_grp1_en;
 			round_cfg["fifo_grp2_en"] = rc[i].rd_control_enable.fifo_grp2_en;
 			round_cfg["round_pause"] =  rc[i].rd_control_enable.round_pause;
-			round_cfg["gain"] =  512;
+			round_cfg["gain"] =  1024;
 
 			Json::Value weight;
 			weight["w_win_column_s"] = rc[i].array_grp_config.w_win_column_s;
@@ -1133,8 +1133,8 @@ namespace base{
 											std::vector<Tensor*> input_tensors)
 	{
 		DLOG(INFO)<<"========Generate Array Calibration Config============";
-		FILE*stream_in = fopen("./build/output/map/expected_in.bin", "wb");
-		FILE*stream_out = fopen("./build/output/map/expected_out.bin", "wb");
+		FILE*stream_in = fopen("./build/output/map/expected_in.bin", "wb+");
+		FILE*stream_out = fopen("./build/output/map/expected_out.bin", "wb+");
 		if(!stream_in)
 		{
 			LOG(FATAL)<<"Open expected_in.bin error!";
@@ -1145,8 +1145,6 @@ namespace base{
 		}
 		auto in_nodes = InGraph.inNodes();
 		auto out_nodes = InGraph.outNodes();
-		vector<int> shape_input = input_tensors[0]->getShape();
-		DLOG(INFO)<<"calibration input shape:"<<shape_input;
 		// input_tensors[0]->print();
 		// input_tensors[1]->print();
 
@@ -1171,7 +1169,8 @@ namespace base{
 			{
 				if(isInputNode(op_list[i], in_nodes))
 				{
-					DLOG(INFO)<<"[Input Node]";
+					// DLOG(INFO)<<"[Input Node]";
+					//input_tensors[idx]->print();
 					baseOpNodePtr node = op_list[i];
 					vector<vector<int> > int_shape = node->infer_shape();
 					Tensor* out = new Tensor(int_shape[0], CONST_TYPE);
@@ -1179,11 +1178,11 @@ namespace base{
 					node->forward(input_tensors[idx], out, array_result_tensor);
 					node->updateInputTensors(input_tensors[idx]);
 					node->updateOutputTensors(out, array_result_tensor);
-					DLOG(INFO)<<"[forward]: output Tensor:";
-					array_result_tensor->print();
+					// DLOG(INFO)<<"[forward]: output Tensor:";
+					// array_result_tensor->print();
 					vector<int16_t>data_output;
 					vector<int16_t>data_input;
-
+					// exit(-1);
 					//out --> vector<char> data_output
 					for(int k = 0; k < int_shape[0][1]; k ++)
 						data_output.push_back((int16_t)((char*)array_result_tensor->getData())[k]);
@@ -1198,7 +1197,7 @@ namespace base{
 				}
 				else if(isOutputNode(op_list[i], out_nodes))
 				{
-					DLOG(INFO)<<"[Output Node]";
+					// DLOG(INFO)<<"[Output Node]";
 					baseOpNodePtr node = op_list[i];
 					vector<baseOpNodePtr> innodes = InGraph.innodes_of_node(op_list[i]);
 					vector<Tensor*> in_node_tensors = innodes[0]->getBottomTensors();
@@ -1208,8 +1207,8 @@ namespace base{
 					node->forward(in_node_tensors[idx], out, array_result_tensor);
 					node->updateInputTensors(input_tensors[idx]);
 					node->updateOutputTensors(out, array_result_tensor);
-					DLOG(INFO)<<"[forward]: *****final output Tensor*****:";
-					out->print();
+					// DLOG(INFO)<<"[forward]: *****final output Tensor*****:";
+					// out->print();
 					output_tensors.push_back(out);
 					//out --> vector<char> data_output
 					vector<int16_t>data_output;
@@ -1228,7 +1227,7 @@ namespace base{
 				}
 				else
 				{
-					DLOG(INFO)<<"[Normal Node]";
+					// DLOG(INFO)<<"[Normal Node]";
 					baseOpNodePtr node = op_list[i];
 					vector<baseOpNodePtr> innodes = InGraph.innodes_of_node(op_list[i]);
 					vector<Tensor*> in_node_tensors = innodes[0]->getBottomTensors();
@@ -1238,7 +1237,7 @@ namespace base{
 					node->forward(in_node_tensors[idx], out, array_result_tensor);
 					node->updateInputTensors(input_tensors[idx]);
 					node->updateOutputTensors(out, array_result_tensor);
-					DLOG(INFO)<<"[forward]: *****final outout Tensor*****:";
+					// DLOG(INFO)<<"[forward]: *****final outout Tensor*****:";
 					//out --> vector<char> data_output
 					vector<int16_t>data_output;
 					vector<int16_t>data_input;
@@ -1255,8 +1254,9 @@ namespace base{
 				}
 			}
 		}
-		int layers = op_list.size();
-		fwrite(&layers, sizeof(u_int16_t), 1, stream_in);
+
+		int num = input_tensors.size();
+		fwrite(&num, sizeof(u_int16_t), 1, stream_in);
 		for(size_t m = 0; m < op_list.size(); m++)
 		// for(size_t m = 0; m < 1; m++)
 		{
@@ -1266,16 +1266,16 @@ namespace base{
 			for (auto kv : data_3dim_input[m])
 			{
 				fwrite(kv.data(), sizeof(int16_t), kv.size(), stream_in);
-				// DLOG(INFO)<<"[in] m = "<<m<<" n = "<<ln<< " size = "<<kv.size()<<" data:"<<kv;
+				// DLOG(INFO)<<"[in] node = "<<m<<" n = "<<n<< " size = "<<kv.size()<<" data:"<<kv;
 				n++;
 			}
 			//output
 			for (auto kv : data_3dim_output[m])
 			{
-				for(auto kk : kv)
+				// for(auto kk : kv)
 				// DLOG(INFO)<<"data:"<<(int)kk;
 				fwrite(kv.data(), sizeof(int16_t), (int)(kv.size()), stream_out);
-				// DLOG(INFO)<<"[out] m = "<<m<<" z = "<<z<< " size = "<<kv.size()<<" data:"<<kv;
+				// DLOG(INFO)<<"[out] node = "<<m<<" z = "<<z<< " size = "<<kv.size()<<" data:"<<kv;
 				z++;
 			}
 		}

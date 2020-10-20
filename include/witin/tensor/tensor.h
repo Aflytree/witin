@@ -121,7 +121,7 @@ class Tensor{
 		struct mem_record * mr;
 		void* __data;
 };
-
+//440 - 512
 inline int fillTensorPtr(Tensor *t, vector<int> shape, void *value)
 {
 	char * data;
@@ -137,7 +137,7 @@ inline int fillTensorPtr(Tensor *t, vector<int> shape, void *value)
 	{
 		for(int j = 0; j < shape[1]; j++)
 		{
-			data[i * shape[1] + j] = ((char*)value)[i + j];
+			data[i * shape[1] + j] = ((char*)value)[i * shape[1] + j];
 			//DLOG(INFO)<<"data:"<<(int)(char)(i+j);
 			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
 		}
@@ -161,7 +161,7 @@ inline int fillTensorPtr(Tensor *t, vector<int> shape,  vector<char>value)
 	{
 		for(int j = 0; j < shape[1]; j++)
 		{
-			data[i * shape[1] + j] = value[i + j];
+			data[i * shape[1] + j] = value[i * shape[1] + j];
 			//DLOG(INFO)<<"data:"<<(int)(char)(i+j);
 			//DLOG(INFO)<<"data:"<<(int)data[i*shape[1] + j];
 		}

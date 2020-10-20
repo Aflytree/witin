@@ -18,16 +18,16 @@ namespace base{
         fillTensorPtr(tensor,
 		                        ts->getShape(),
 		                        ts->getData());
-        DLOG(INFO)<<"bottom_tensors size = "<<bottom_tensors.size();
+        // DLOG(INFO)<<"bottom_tensors size = "<<bottom_tensors.size();
         bottom_tensors.push_back(tensor);
-        tensor->print();
+        // tensor->print();
 
         Tensor *tensor1 = new Tensor(array_result_tensor->getShape(), CONST_TYPE);
         fillTensorPtr(tensor1,
 		                        array_result_tensor->getShape(),
 		                        array_result_tensor->getData());
-        tensor1->print();
-        DLOG(INFO)<<"array_output_tensors size = "<<array_output_tensors.size();
+        // tensor1->print();
+        // DLOG(INFO)<<"array_output_tensors size = "<<array_output_tensors.size();
         array_output_tensors.push_back(tensor1);
     }
 
@@ -38,7 +38,7 @@ namespace base{
         fillTensorPtr(tensor,
 		                        ts->getShape(),
 		                        ts->getData());
-        DLOG(INFO)<<"top_tensors size = "<<top_tensors.size();
+        // DLOG(INFO)<<"top_tensors size = "<<top_tensors.size();
         top_tensors.push_back(tensor);
 
         Tensor *tensor1 = new Tensor(ts->getShape(), CONST_TYPE);

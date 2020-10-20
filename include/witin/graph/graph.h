@@ -187,8 +187,8 @@ class witin_graph
 				if(node == t)
 				{
 					node_list.push_back(s);
-					DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
-					    t->getName() <<"["<<target(*itr, inter_graph) <<"]";
+					// DLOG(INFO) <<s->getName() <<"["<<source(*itr, inter_graph)<<"]" << "-->" <<
+					//     t->getName() <<"["<<target(*itr, inter_graph) <<"]";
 				}
             }
 			return node_list;

@@ -67,7 +67,6 @@ class mvOpNode : public OpNode{
 		{
 			Tensor *t;
 			getConstTensor(&t);
-
 			vector<int> input2_shape = t->getShape();
 
 			if(input1_shape[0].size() != 2 || input2_shape.size() != 2)
@@ -79,11 +78,8 @@ class mvOpNode : public OpNode{
 
 			out_shape.push_back(input1_shape[0][0]);
 			out_shape.push_back(input2_shape[1]);
+			// DLOG(INFO)<<"[infer shape] out_shape:"<<out_shape;
 
-			for(auto kv : out_shape)
-			{
-				DLOG(INFO)<<"[infer shape] out_shape : "<<kv;
-			}
 			vector<vector<int> > ret;
 			ret.push_back(out_shape);
 			return ret;
@@ -125,11 +121,11 @@ class mvOpNode : public OpNode{
 
 		void forward(Tensor *input_tensor, Tensor* output_tensor, Tensor* array_result)
 		{
-			DLOG(INFO)<<"mvOpNode forward --->";
+			// DLOG(INFO)<<"mvOpNode forward --->";
 			vector<int> shape1 = input_tensor->getShape();
 			vector<int> shape2 = const_tensor->getShape();
 			vector<int> scale_table = {128, 256, 512,  1024, 2048, 4096};
-			vector<int> scale_table_index = {7, 8, 9, 10, 11};
+			vector<int> scale_table_index = {7, 8, 9, 10, 11, 12};
 			int index = 0;
 			for(size_t idx = 0; idx < scale_table.size(); idx++)
 			{
@@ -140,10 +136,7 @@ class mvOpNode : public OpNode{
 				}
 			}
 			shift_scale = scale_table_index[index];
-
-			DLOG(INFO)<<"shape1:"<< shape1;
-			DLOG(INFO)<<"shape2:"<< shape2;
-
+			// const_tensor->print();
 			vector<int16_t> arrayResult = ComputeArrayMac(input_tensor, const_tensor);
 			// DLOG(INFO)<<"arrayResult:"<< arrayResult;
 			vector<int16_t> biasResult ;
@@ -159,6 +152,8 @@ class mvOpNode : public OpNode{
 				for(auto kv : biasResult)
 				{
 					int afterShift = kv >> shift_scale;
+					// DLOG(INFO)<<"afterShift:"<< afterShift;
+
 					if(round(afterShift) > 127)
 						afterArray.push_back(127);
 					else if(round(afterShift) < -128)
@@ -180,7 +175,6 @@ class mvOpNode : public OpNode{
 						afterArray.push_back(round(afterShift));
 				}
 			}
-			// DLOG(INFO)<<"afterArray:"<< afterArray;
 
 			//act compute
 			if(getActEn())
@@ -194,12 +188,8 @@ class mvOpNode : public OpNode{
 			}
 
 			//final_result
-			if(getBiasEn() && getActEn())
+			if(getActEn())
 				final_result = actResult;
-			else if(getBiasEn() && !getActEn())
-				final_result = afterArray;
-			else if(!getBiasEn() && !getActEn())
-				final_result = afterArray;
 			else
 				final_result = afterArray;
 
@@ -216,7 +206,7 @@ class mvOpNode : public OpNode{
 		class ACT_ATTRS act_attrs;
 		class BIAS_ATTRS bias_attrs;
 		Tensor *const_tensor;
-		int scale = 512;
+		int scale = 1024;
 		int shift_scale;
 };
 

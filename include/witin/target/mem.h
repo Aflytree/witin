@@ -247,11 +247,13 @@ class CaculateArryMem : public Mem{
 				{
 					LOG(FATAL)<< "rowAddr size should less than ARRAY_ROW_UP_SIZE or ARRAY_ROW_DOWN_SIZE!";
 				}
+				if(array_row_down_flag)
+					return ARRAY_ROW_UP_SIZE;
 			}
 			else
 			{
 				vector<int>::iterator max_value = max_element(arrayDownSpaceMax.begin(), arrayDownSpaceMax.end());
-				return *max_value;
+				return *max_value + 1024;
 			}
 
 			return 0;
@@ -266,12 +268,12 @@ class CaculateArryMem : public Mem{
 				LOG(FATAL)<<"addr or size is less than 0  when allocate column CaculateArryMem!";
 			}
 
-			if((array_row_down_flag == 1) && ((arrayColumnUsedSize + size) >= ARRAY_COLUMN_SIZE))
+			if((array_row_down_flag == 1) && ((arrayColumnUsedSize + size) > ARRAY_COLUMN_SIZE))
 			{
-				LOG(WARNING)<<" array_row_down_flag = 1: Array Column addr is not enough to alloc !";
+				//LOG(WARNING)<<" array_row_down_flag = 1: Array Column addr is not enough to alloc !";
 				rowNotStartFromZeroFlag = 1;
 				arrayColumnUsedSize = 0;
-				return  0;
+				return  16;
 			}
 
 			if((arrayColumnUsedSize + size) > ARRAY_COLUMN_SIZE)
@@ -280,7 +282,7 @@ class CaculateArryMem : public Mem{
 				arrayColumnUsedSize = 0;
 				columnAddr = 0;
 				arrayDownSpaceMax.push_back(size);
-				LOG(WARNING)<< "Use row down mem space!";
+				//LOG(WARNING)<< "Use row down mem space!";
 			}
 
 			if(1 == array_row_down_flag && arrayColumnUsedSize > ARRAY_COLUMN_SIZE)

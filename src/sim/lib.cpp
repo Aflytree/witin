@@ -12,7 +12,7 @@ namespace base{
 /*
  * basic lib of npu array mac
  */
-vector<int16_t> ComputeArrayMac(Tensor *t1, Tensor *t2)
+vector<int16_t> ComputeArrayMac(Tensor* t1, Tensor* t2)
 {
 	vector<int> shape1 = t1->getShape();
 	vector<int> shape2 = t2->getShape();
@@ -23,12 +23,26 @@ vector<int16_t> ComputeArrayMac(Tensor *t1, Tensor *t2)
 
 	if(shape1[0] != 1)
 		LOG(FATAL)<<"shape1[0] should be 0";
-	for(int i = 0; i < shape2[1]; i++)
+	for(int i = 0; i < shape2[1]; i++) //512
 	{
 		int16_t result_cr = 0;
-		for(int j = 0; j <shape1[1];j++)
+		for(int j = 0; j <shape1[1];j++) //440
 		{
 			result_cr += (((char*)t1->getData())[j]) * (((char*)t2->getData())[j * shape2[1] + i]);
+			// if(i == 0 && j < 10)
+			// {
+			// 	DLOG(INFO)<<j<<" DATA1 = " <<(int)(((char*)t1->getData())[j]);
+			// 	DLOG(INFO)<<(j*shape2[1] + i)<<" DATA2 = " <<(int)(((char*)t2->getData())[j * shape2[1] + i]);
+			// }
+
+			// if(i == 0 && ( (shape1[1] - 10) < j < shape1[1]))
+			// {
+			// 	if(j > shape1[1] - 10 && j < shape1[1])
+			// 	{
+			// 		DLOG(INFO)<<"j = "<<j<<" end DATA1 = " <<(int)(((char*)t1->getData())[j]);
+			// 		DLOG(INFO)<<"j = "<<j<<" end DATA2 = " <<(int)(((char*)t2->getData())[j * shape2[1] + i]);
+			// 	}
+			// }
 		}
 		data.push_back(result_cr);
 	}

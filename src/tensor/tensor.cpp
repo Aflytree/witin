@@ -93,8 +93,14 @@ namespace base{
 			DLOG(INFO)<<"Data is:";
 			int size = 0;
 			getSize(size);
-			for(int i = 0;i < size; i++){
-				if(i < 100)
+			for(int i = 0;i < size; i++)
+			{
+				int large = 0;
+				if(size > 10)
+					large = 10;
+				else
+					large = size;
+				if(i < large)
 					ss<<(int)((char*)__data)[i]<<" ";
 				//if(i % 10 == 0 && i != 0)
 				//	ss<<"\n";
